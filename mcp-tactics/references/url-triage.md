@@ -3,12 +3,19 @@
 One server, two very different modes. Choosing between them is the highest-stakes
 decision in this whole tactics book. Call `get_usage` before first use.
 
-## The two modes
+## The two modes — and the third thing you must not do
 
 | Tool | What happens | Who can see it |
 |---|---|---|
 | `search` | Queries urlscan.io's database of **past public scans** | urlscan.io only |
 | `scan_url` | Sends urlscan's **browser to the URL, now** | urlscan.io **and the site being scanned** |
+| ~~`chrome-pilot`~~ | Sends **your** browser, from **your** IP | the site being scanned, **and it can attribute the visit to you** |
+
+The third row is not an option on this ladder. `chrome-pilot` exists for
+development and automation ([browser.md](browser.md)); reaching for it because
+a suspicious page is easier to read in a real browser discards the entire
+reason `scan_url` uses somebody else's infrastructure — and
+`get_screenshot` shows the same rendered page.
 
 `search` is the default. It answers "has anyone looked at this before, and what
 did they see?" without the target learning anything. Run it first, every time.

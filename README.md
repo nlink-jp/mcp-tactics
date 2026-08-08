@@ -1,13 +1,16 @@
 # mcp-tactics
 
 A Claude Code Skill: the cross-cutting tactics book for
-[nlink-jp](https://github.com/nlink-jp)'s 17 MCP servers and 2 proxies
-([ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md)).
+[nlink-jp](https://github.com/nlink-jp)'s 19 MCP servers and 2 proxies
+([ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md),
+amended by
+[ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)).
 `SKILL.md` is a router of decision tables — input artifact → route,
-cross-server chains, and an offline-before-third-party-before-target-contact
-escalation doctrine — with per-domain playbooks under `references/`. It
-records selection and ordering only; each server's own `get_usage` tool stays
-authoritative for parameters and error recovery.
+cross-server chains, and a four-tier escalation doctrine ranked by who can see
+that you asked, from no external observer up to contact from your own IP —
+with per-domain playbooks under `references/`. It records selection and
+ordering only; each server's own `get_usage` tool stays authoritative for
+parameters and error recovery.
 
 ## Installation
 

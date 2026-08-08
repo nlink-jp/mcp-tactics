@@ -1,12 +1,14 @@
 # mcp-tactics
 
-[nlink-jp](https://github.com/nlink-jp) の 17 MCP サーバと 2 プロキシを横断する
-戦術書 Skill（[ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md)）。
-`SKILL.md` は意思決定テーブルのルーター — 入力アーティファクト→ルート、
-サーバ横断チェーン、そして「オフライン → サードパーティ照会 → 対象接触」の
-エスカレーション・ドクトリン — で、ドメイン別プレイブックを `references/`
-に持ちます。記録するのは選択と順序のみで、パラメータとエラー回復は各サーバの
-`get_usage` ツールが正典です。
+[nlink-jp](https://github.com/nlink-jp) の 19 MCP サーバと 2 プロキシを横断する
+戦術書 Skill（[ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md)、
+[ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)
+で改訂）。`SKILL.md` は意思決定テーブルのルーター — 入力アーティファクト→ルート、
+サーバ横断チェーン、そして「その照会を誰が観測できるか」で序列化した 4 段の
+エスカレーション・ドクトリン（外部観測者なし → サードパーティ照会 →
+urlscan 経由の対象接触 → 自社 IP からの対象接触）— で、ドメイン別プレイブックを
+`references/` に持ちます。記録するのは選択と順序のみで、パラメータとエラー回復は
+各サーバの `get_usage` ツールが正典です。
 
 ## インストール
 

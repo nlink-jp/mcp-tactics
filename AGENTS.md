@@ -2,10 +2,12 @@
 
 ## Project summary
 
-Claude Code Skill: cross-cutting selection layer for nlink-jp's MCP servers
-(ADR-003). Decision tables route an input artifact (IP, domain, URL, hash,
-MAC, pcap, data file, …) to the right server in the right order, under an
-offline-before-third-party-before-target-contact escalation doctrine.
+Claude Code Skill: cross-cutting selection layer for nlink-jp's 19 MCP servers
+and 2 proxies (ADR-003, amended by ADR-018). Decision tables route an input
+artifact (IP, domain, URL, hash, MAC, pcap, log question, data file, …) to the
+right server in the right order, under a four-tier escalation doctrine ranked
+by who can observe the query: no external observer → third party → target
+contact via urlscan → target contact from our own IP (`chrome-pilot`).
 Per-domain playbooks live under `mcp-tactics/references/`.
 
 ## Key commands
@@ -41,6 +43,14 @@ mcp-tactics/
   codes belong to each MCP server's own `get_usage` tool; duplicating them
   here guarantees drift (ADR-003). When a server gains or loses a *tool*,
   update the index; when a tool's arguments change, do nothing.
+- **`get_usage` is not universal** — `ask-gemini`, `ask-llm`, and
+  `chrome-pilot` ship none (single-tool servers, and upstream schema
+  compatibility respectively). The Skill names them so the absence reads as
+  expected; if a fourth appears, add it to that list rather than restating
+  its parameters here (ADR-018).
+- **A new MCP server is in scope when it *can* contact a party under
+  investigation**, not only when investigation is its purpose — that is why a
+  browser automation server sits in an OSINT tactics book (ADR-018).
 - The skill is Markdown — no build, no behaviour tests. Structure *is*
   tested: `make check` verifies frontmatter and relative links.
 - The `mcp-tactics/` subdirectory is the distribution boundary (ADR-004):

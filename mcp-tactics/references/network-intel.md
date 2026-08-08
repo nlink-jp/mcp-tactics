@@ -19,6 +19,11 @@ covers selection, ordering, and pitfalls only.
 
 ## Ordering for an unknown IP
 
+0. **Your own telemetry first, if you have it.** `splunk-mcp` is tier 1 —
+   nothing external observes it — and "did this address ever reach us, and
+   how often?" reframes everything below. An IP with 3,000 hits in your proxy
+   logs and an IP with none are different investigations, whatever AbuseIPDB
+   says about either. See [log-search.md](log-search.md).
 1. **`asn-lookup`** — `db_status`, then `lookup_ip`. AS, org, and country in one
    offline call. This is context for everything that follows: a hosting AS, a
    consumer ISP, and a cloud provider imply completely different follow-ups.

@@ -71,7 +71,11 @@ Local diffusion via stable-diffusion.cpp on Metal.
   High resolutions on a 16 GB machine hit OOM — reduce resolution before
   reaching for `upscale`
 - **Model weights are not bundled.** `list_models` shows what is actually
-  installed; a model in the catalogue is not necessarily on this machine
+  installed; a model in the catalogue is not necessarily on this machine. It
+  also reports weights that are *recorded but absent* — a model whose files
+  were moved is listed as missing rather than healthy, and generation fails
+  early and by name instead of at the engine. Read that before blaming a
+  prompt
 - Per-model gotchas (CLIP-skip, the SDXL fp16-fix VAE, native resolution,
   sampler, prediction type) live in the model profile and are applied
   automatically — do not hand-tune them

@@ -54,10 +54,20 @@ right tool for `execute_code` output and the wrong tool for new host files.
 `list_workspaces` to find an earlier session's work, `describe_workspace` to see
 what is in it, `delete_workspace` with `dry_run: true` before removing anything.
 
+## Where the file often comes from
+
+`splunk-mcp` writes any result above its inline threshold as JSONL under the
+workspace you gave it, with the exact row count. That path goes straight into
+`load_data` — Splunk retrieves, DuckDB analyses. Re-running narrower SPL to
+keep results inline is the wrong instinct; see
+[log-search.md](log-search.md).
+
 ## When not to use this server
 
 - **A pcap** → [pcap.md](pcap.md). `pcap-analyzer` mounts the capture read-only
   and preserves its hash; loading packet exports into DuckDB loses that.
+- **A question your own Splunk already answers** → [log-search.md](log-search.md).
+  Retrieval with an exact count belongs there; bring the result here.
 - **A one-line question about a small file** → reading the file directly is
   faster than provisioning a workspace and a container.
 - **Data that must not leave its original form** → the workspace copies data

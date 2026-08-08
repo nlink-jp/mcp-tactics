@@ -7,7 +7,9 @@ infrastructure you work *with*, not tools you pick per task.
 ## ask-llm vs ask-gemini
 
 Both expose a single tool that forwards a prompt and returns the response:
-`ask_llm(prompt)` and `ask_gemini(prompt)`.
+`ask_llm(prompt)` and `ask_gemini(prompt)`. That one tool is the whole
+surface — neither ships `get_usage`, and nothing is missing when you do not
+find one.
 
 | | `ask-llm` | `ask-gemini` |
 |---|---|---|
