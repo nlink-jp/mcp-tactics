@@ -12,33 +12,27 @@ with per-domain playbooks under `references/`. It records selection and
 ordering only; each server's own `get_usage` tool stays authoritative for
 parameters and error recovery.
 
-## Installation
-
-### From a release zip (recommended)
+## Install
 
 Download `mcp-tactics-vX.Y.Z.zip` from
-[Releases](https://github.com/nlink-jp/mcp-tactics/releases) and unzip it
-into your skills directory:
+[Releases](https://github.com/nlink-jp/mcp-tactics/releases), then register it:
+
+- **In the app** (Claude Desktop, claude.ai, mobile) — add the zip from the
+  skill settings (Customize → Skills). Prefer this route; it survives changes
+  to where skills are stored on disk.
+- **Claude Code** — `unzip mcp-tactics-vX.Y.Z.zip -d ~/.claude/skills/`, or into a
+  project's `.claude/skills/` for a project-scoped install.
+
+From a checkout:
 
 ```bash
-unzip mcp-tactics-vX.Y.Z.zip -d ~/.claude/skills/
-```
-
-Use `.claude/skills/` inside a project instead for project-scoped installs.
-
-On claude.ai, Claude Desktop, or mobile: upload the zip as-is under
-**Settings → Skills**.
-
-### From source
-
-```bash
-git clone https://github.com/nlink-jp/mcp-tactics.git
-cd mcp-tactics
 make install
 ```
 
-`make install DEST=/path/to/project/.claude/skills` installs to a specific
-project. `make uninstall` removes the installed copy.
+That builds the release zip and unpacks *that*, so what you run is what a
+release ships — a packaging defect breaks your install rather than reaching
+users. `make install DEST=/path/to/skills` installs elsewhere;
+`make uninstall` removes it.
 
 ## Usage
 

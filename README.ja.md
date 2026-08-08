@@ -12,31 +12,25 @@ urlscan 経由の対象接触 → 自社 IP からの対象接触）— で、�
 
 ## インストール
 
-### リリース zip から（推奨）
-
 [Releases](https://github.com/nlink-jp/mcp-tactics/releases) から
-`mcp-tactics-vX.Y.Z.zip` をダウンロードし、skills ディレクトリに展開します:
+`mcp-tactics-vX.Y.Z.zip` をダウンロードし、登録する:
+
+- **アプリから**（Claude Desktop / claude.ai / モバイル）— スキル設定
+  （カスタマイズ → スキル）で zip を追加する。**この経路を推奨**。
+  スキルの保存場所が変わっても影響を受けない。
+- **Claude Code** — `unzip mcp-tactics-vX.Y.Z.zip -d ~/.claude/skills/`。
+  プロジェクト単位なら、プロジェクト内の `.claude/skills/` に展開する。
+
+チェックアウトから:
 
 ```bash
-unzip mcp-tactics-vX.Y.Z.zip -d ~/.claude/skills/
-```
-
-プロジェクト単位でインストールする場合は、プロジェクト内の
-`.claude/skills/` に展開してください。
-
-claude.ai / Claude Desktop / モバイルでは、**Settings → Skills** から
-zip をそのままアップロードできます。
-
-### ソースから
-
-```bash
-git clone https://github.com/nlink-jp/mcp-tactics.git
-cd mcp-tactics
 make install
 ```
 
-`make install DEST=/path/to/project/.claude/skills` で特定プロジェクトに
-インストールできます。`make uninstall` で削除します。
+リリース zip をビルドして**それを**展開するので、手元で動かすものと
+リリースが配るものが一致する。パッケージングの欠陥は利用者に届く前に
+手元のインストールを壊す。`make install DEST=/path/to/skills` で別の場所へ、
+`make uninstall` で削除。
 
 ## 使い方
 
