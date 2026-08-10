@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-08-10
+
+Catches the skill up with the fleet's twentieth server, `otx-lookup`.
+
+### Added
+
+- **`otx-lookup`** — campaign context for an indicator, from OTX community
+  pulses. Tier 2: it reads a third-party index and touches no target. Added to
+  the tier table, the server index, the IP / domain / file-hash rows of the
+  decision table, and a new row for the pivot from an indicator to the rest of
+  a campaign.
+- **[references/campaign-context.md](mcp-tactics/references/campaign-context.md)** —
+  the per-domain playbook. Its core is how to read the result honestly:
+  `incomplete` before trusting an empty answer, `pulses_held` vs `pulses_shown`
+  because held is a lower bound, and `indicators_exact` which means "upstream
+  stated a total", not "this list may be short".
+
+### Changed
+
+- **A fourth corollary to the doctrine: attributability inside tier 2.** The
+  new server did not move the ranking's endpoints — they are still tier 1 and
+  tier 4 — but it made an axis explicit that was always latent. `whois-lookup`,
+  `doh-lookup` and `rdns-lookup` are anonymous reads; `abuse-lookup`,
+  `urlscan-lookup` and `otx-lookup` carry a key, so the query lands in an
+  account history someone else holds. `otx-lookup` is the only server where
+  that choice is available per call, which is what makes the distinction worth
+  writing down rather than leaving implied.
+
 ## [0.2.0] - 2026-08-08
 
 Catches the skill up with the MCP fleet, which grew from 17 servers to 19.

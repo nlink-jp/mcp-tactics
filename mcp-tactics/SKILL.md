@@ -5,7 +5,7 @@ description: Choose the right nlink-jp MCP server for the situation, and call th
 
 # MCP Tactics — nlink-jp MCP servers
 
-19 MCP servers and 2 proxies, organized by *when to reach for them*.
+20 MCP servers and 2 proxies, organized by *when to reach for them*.
 
 ## The one contract
 
@@ -32,11 +32,11 @@ tier 4 only when you can justify it in the writeup.
 | Tier | Who observes | Servers |
 |---|---|---|
 | **1 — no external observer** | Nobody outside this machine or your own infrastructure | `asn-lookup`, `mac-lookup`, `tor-exit-lookup`, `icloud-relay-lookup`, `pcap-analyzer`, `splunk-mcp` |
-| **2 — third party** | A registry, resolver, or reputation service | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `malware-lookup`, `urlscan-lookup` (`search`) |
+| **2 — third party** | A registry, resolver, or reputation service | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `malware-lookup`, `otx-lookup`, `urlscan-lookup` (`search`) |
 | **3 — target contact, by proxy** | The party under investigation sees a visit **from urlscan.io** | `urlscan-lookup` (`scan_url`) |
 | **4 — target contact, from you** | The party under investigation sees a visit **from your IP, with your browser** | `chrome-pilot` (`navigate_page`, and anything that loads a resource) |
 
-Three corollaries that are easy to get wrong:
+Four corollaries that are easy to get wrong:
 
 - `urlscan-lookup` spans tiers 2 and 3. `search` queries urlscan's historical
   database and never touches the target; `scan_url` sends urlscan's browser to
@@ -49,6 +49,15 @@ Three corollaries that are easy to get wrong:
   the risk follows the capability, not the server's purpose.
 - Tier 1's offline servers need their local cache populated first (`update_db`
   / `update_list`). A stale or absent cache is a setup step, not a dead end.
+- **Inside tier 2 there is a second axis: whether the query is attributable to
+  you.** `whois-lookup`, `doh-lookup` and `rdns-lookup` are anonymous reads —
+  the third party sees a query, not a querent. `abuse-lookup`, `urlscan-lookup`
+  and `otx-lookup` carry an API key, so the query lands in an account history
+  someone else holds. The ladder does not re-rank for this; the endpoints are
+  still tier 1 and tier 4. But `otx-lookup` is the one server where the choice
+  is yours per call — everything except pulse search works anonymously, and
+  `anonymous: true` declines to identify you. Use it when the *fact that you
+  asked* is itself sensitive.
 
 ## Server index
 
@@ -65,6 +74,7 @@ Investigation layer:
 | `rdns-lookup` | IP → every indexed domain; domain → subdomains, reverse CNAMEs (ip.thc.org index — not PTR) | 2 | none | `lookup_rdns` / `lookup_subdomains` / `lookup_cnames` |
 | `abuse-lookup` | IP reputation (AbuseIPDB) | 2 | API key; **1000 checks/day** | `check_ip` → `get_reports` |
 | `malware-lookup` | Is this file hash a known-good file or known malware? | 2 | abuse.ch Auth-Key optional (family/tag enrichment) | `check_hash` → *(rarely)* `get_sample_info` |
+| `otx-lookup` | Is this indicator part of a known campaign? Adversary, malware family, ATT&CK, targeted industries — and the pivot to the other indicators a pulse carries | 2 | API key optional (adds pulse search + an exact indicator total) | `lookup_indicator` → `get_pulse` |
 | `urlscan-lookup` | What a suspicious URL is and does | 2 / **3** | API key (free plan, low quota) | `search` → *(deliberate)* `scan_url` → `get_result` |
 | `pcap-analyzer` | What is inside a pcap / pcapng capture | 1 | Podman | `create_workspace` → `protocol_hierarchy` |
 | `splunk-mcp` | What your own Splunk already recorded | 1 | Splunk token; one server instance per Splunk host | `list_indexes` → `run_query` |
@@ -92,10 +102,11 @@ Proxies — infrastructure, not tools you pick per task:
 
 | You are handed | Do this |
 |---|---|
-| **An IP address** | `asn-lookup` (AS, country) → `tor-exit-lookup` + `icloud-relay-lookup` (is it an anonymizing egress at all?) → `rdns-lookup` (what else is hosted there — index read, no packet to the target) → `whois-lookup` (allocation) → `abuse-lookup` **last**, because it is the only metered one. If your own telemetry is in Splunk, `splunk-mcp` slots in at the front: what *we* recorded is tier 1 and often decides whether the external ladder is worth walking |
-| **A domain** | `whois-lookup` (age, registrar, abuse contact) → `doh-lookup` (where it resolves now) → `rdns-lookup` (`lookup_subdomains` / `lookup_cnames` for the surrounding names) → `asn-lookup` on the resolved IPs. A days-old registration plus fresh NS is the signal, not any single field |
-| **A file hash** | `malware-lookup` `check_hash` (1–100 per call, MD5/SHA1/SHA256 auto-detected). Read the verdict as four-way: `conflicting` means known file **and** flagged — scrutinize, never auto-resolve (even EICAR is conflicting); `unknown` can still be registered in MalwareBazaar only, since enrichment runs on an MHR hit. `get_sample_info` only when the compact evidence is not enough. The VT link in each result is for a human browser, never an API to call |
+| **An IP address** | `asn-lookup` (AS, country) → `tor-exit-lookup` + `icloud-relay-lookup` (is it an anonymizing egress at all?) → `rdns-lookup` (what else is hosted there — index read, no packet to the target) → `whois-lookup` (allocation) → `abuse-lookup` **last**, because it is the only metered one. `otx-lookup` answers a different question from all of them — *is this part of a known campaign* — so run it whenever the answer would change your triage, not as a step in the ladder. If your own telemetry is in Splunk, `splunk-mcp` slots in at the front: what *we* recorded is tier 1 and often decides whether the external ladder is worth walking |
+| **A domain** | `whois-lookup` (age, registrar, abuse contact) → `doh-lookup` (where it resolves now) → `rdns-lookup` (`lookup_subdomains` / `lookup_cnames` for the surrounding names) → `asn-lookup` on the resolved IPs. A days-old registration plus fresh NS is the signal, not any single field. `otx-lookup` in parallel for campaign context — note it asks a name as both `domain` and `hostname`, because OTX indexes each name under exactly one and answers 200 either way |
+| **A file hash** | `malware-lookup` `check_hash` (1–100 per call, MD5/SHA1/SHA256 auto-detected). Read the verdict as four-way: `conflicting` means known file **and** flagged — scrutinize, never auto-resolve (even EICAR is conflicting); `unknown` can still be registered in MalwareBazaar only, since enrichment runs on an MHR hit. `get_sample_info` only when the compact evidence is not enough. The VT link in each result is for a human browser, never an API to call. Then `otx-lookup` `lookup_indicator` for who reported the hash and under what campaign — `malware-lookup` says *what the file is*, `otx-lookup` says *whose operation it belongs to* |
 | **A URL** | `urlscan-lookup` `search` first. Only if the passive record is empty *and* an active look is justified, `scan_url` (private) → `get_result` → `get_screenshot`. Feed observed IPs/domains back into the two rows above |
+| **An indicator that turned out to be reported** | `otx-lookup` `get_pulse` with the `pulse_id` from `lookup_indicator`, and `indicators: true` — this is the pivot from one indicator to the rest of a campaign, and it needs no API key. Read `incomplete` before you trust an empty answer, and `indicators_exact` before you trust a total. Pulses are community submissions: the author and vote counts come back so you can weigh them, and the tool never issues a verdict |
 | **A MAC address / BSSID** | `mac-lookup`. Read `vendor_lookup_applicable` **before** `vendor`: when false, the address is broadcast, multicast, or locally administered (a randomized MAC or virtual NIC) and no manufacturer exists to find — that is the answer, not a failed lookup |
 | **A pcap / pcapng** | `pcap-analyzer`: `create_workspace` → `protocol_hierarchy` → `list_conversations` → `query_packets` → `follow_stream` / `extract_objects`. Then send external IPs through the IP row, and hash extracted objects (`shasum -a 256`) for the file-hash row |
 | **A question about your own logs** | `splunk-mcp`: `list_indexes` → `list_sourcetypes` to learn the shape, then `run_query`. Nothing external observes it, so this is a tier 1 step — asking "have we seen this indicator ourselves?" belongs *before* the metered external ones, not after. Above the inline threshold the full result set lands as a JSONL file; hand that path to `data-toolbox` rather than re-running narrower searches |
@@ -172,6 +183,7 @@ three servers without one, to their `tools/list` descriptions.
 | File | Covers |
 |---|---|
 | [references/network-intel.md](references/network-intel.md) | `asn-lookup`, `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `tor-exit-lookup`, `icloud-relay-lookup`, `mac-lookup` |
+| [references/campaign-context.md](references/campaign-context.md) | `otx-lookup` |
 | [references/url-triage.md](references/url-triage.md) | `urlscan-lookup` |
 | [references/hash-intel.md](references/hash-intel.md) | `malware-lookup` |
 | [references/pcap.md](references/pcap.md) | `pcap-analyzer` |

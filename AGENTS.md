@@ -2,7 +2,7 @@
 
 ## Project summary
 
-Claude Code Skill: cross-cutting selection layer for nlink-jp's 19 MCP servers
+Claude Code Skill: cross-cutting selection layer for nlink-jp's 20 MCP servers
 and 2 proxies (ADR-003, amended by ADR-018). Decision tables route an input
 artifact (IP, domain, URL, hash, MAC, pcap, log question, data file, …) to the
 right server in the right order, under a four-tier escalation doctrine ranked

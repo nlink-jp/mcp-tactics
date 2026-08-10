@@ -1,7 +1,7 @@
 # mcp-tactics
 
 A Claude Code Skill: the cross-cutting tactics book for
-[nlink-jp](https://github.com/nlink-jp)'s 19 MCP servers and 2 proxies
+[nlink-jp](https://github.com/nlink-jp)'s 20 MCP servers and 2 proxies
 ([ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md),
 amended by
 [ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)).

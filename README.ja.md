@@ -1,6 +1,6 @@
 # mcp-tactics
 
-[nlink-jp](https://github.com/nlink-jp) の 19 MCP サーバと 2 プロキシを横断する
+[nlink-jp](https://github.com/nlink-jp) の 20 MCP サーバと 2 プロキシを横断する
 戦術書 Skill（[ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md)、
 [ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)
 で改訂）。`SKILL.md` は意思決定テーブルのルーター — 入力アーティファクト→ルート、
