@@ -1,6 +1,7 @@
-# Media production — voice-studio, video-studio, image-forge
+# Media — voice-studio, video-studio, image-forge, voice-scribe
 
-Three servers that produce artifacts on local hardware. All three are
+Four servers that work media on local hardware: three produce artifacts, and
+`voice-scribe` runs the other way, turning recordings into text. All four are
 file-mediated (outputs are paths, never inline bytes) and async for heavy work.
 Call each server's `get_usage` before first use.
 
@@ -87,3 +88,27 @@ Local diffusion via stable-diffusion.cpp on Metal.
 The cloud counterpart is the `gem-image` CLI (Gemini). Choose `image-forge` when
 the prompt or the subject should not leave the machine, or when no quota should
 be spent; choose `gem-image` when the machine cannot host the model.
+
+## voice-scribe — recordings to text
+
+The reverse direction of `voice-studio`: local speech-to-text via whisper.cpp.
+No API key, no per-minute cost, and no audio leaves the machine — which is why
+investigation material (a customer call, a meeting recording, a voicemail from
+an incident) belongs here rather than in any cloud transcription API.
+
+- **macOS on Apple Silicon only**, like `image-forge` — the same CGO + Metal
+  constraint
+- **Model weights are not bundled.** `list_models` shows what is actually
+  installed; read it before promising a language or speaker labels
+- `transcribe` enqueues and returns a `job_id`; poll `check_job`. A short
+  transcript comes back inline, a long one as a file path with an excerpt —
+  read the file rather than re-running a narrower job
+- It can label **who is speaking**, not just what was said — useful before
+  handing a meeting recording to the `meeting-notes` skill
+- The output envelope is **`gem-transcribe`-compatible**, so downstream
+  parsers take a local and a cloud transcript interchangeably
+
+The cloud counterpart is the `gem-transcribe` CLI (Vertex AI Gemini). Choose
+`voice-scribe` when the audio should not leave the machine or nothing should be
+metered; choose `gem-transcribe` when this machine cannot run the model. For
+material under investigation the choice is already made: it stays local.

@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-08-28
+
+Catches the skill up with the fleet as of late August: the twenty-first
+server, a proxy succession, and a stale skill pointer.
+
+### Added
+
+- **`voice-scribe`** — local transcription (whisper.cpp): a recording in, a
+  transcript out, with optional speaker labels, and no audio leaving the
+  machine. It had actually shipped two days before v0.3.0 counted "the
+  twentieth server", so the count was already one short when it was written.
+  The ranking's endpoints were re-derived and did not move — the server cannot
+  contact a party under investigation, so it joins the production layer, not
+  the tier ladder. It ships `get_usage`, so the three-server exception list is
+  unchanged. New decision-table row for recordings, and a playbook section in
+  `references/media.md`.
+
 ## [0.3.0] - 2026-08-10
 
 Catches the skill up with the fleet's twentieth server, `otx-lookup`.

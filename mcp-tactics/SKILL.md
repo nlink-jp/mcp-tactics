@@ -1,11 +1,11 @@
 ---
 name: mcp-tactics
-description: Choose the right nlink-jp MCP server for the situation, and call them in the right order. Use when investigating an IP address, domain, URL, file hash (MD5/SHA1/SHA256), MAC address / BSSID, or a pcap capture; when searching your own Splunk logs; when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python for data; when driving a real browser; when producing narrated Japanese audio, a presentation video, or a locally generated image; or when a second opinion from another model would help. Also for 調査・トリアージ・不審IP・不審URL・不審メール・ハッシュ照合・マルウェア判定・パケット解析・ログ検索・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・セカンドオピニオン. Read this before reaching for any in-house MCP server, and especially before any lookup or page load that could touch the party under investigation.
+description: Choose the right nlink-jp MCP server for the situation, and call them in the right order. Use when investigating an IP address, domain, URL, file hash (MD5/SHA1/SHA256), MAC address / BSSID, or a pcap capture; when searching your own Splunk logs; when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python for data; when driving a real browser; when producing narrated Japanese audio, a presentation video, or a locally generated image; when transcribing a recording locally; or when a second opinion from another model would help. Also for 調査・トリアージ・不審IP・不審URL・不審メール・ハッシュ照合・マルウェア判定・パケット解析・ログ検索・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・文字起こし・セカンドオピニオン. Read this before reaching for any in-house MCP server, and especially before any lookup or page load that could touch the party under investigation.
 ---
 
 # MCP Tactics — nlink-jp MCP servers
 
-20 MCP servers and 2 proxies, organized by *when to reach for them*.
+21 MCP servers and 2 proxies, organized by *when to reach for them*.
 
 ## The one contract
 
@@ -86,6 +86,7 @@ Production and analysis layer:
 | `data-toolbox` | DuckDB queries + sandboxed Python over local files | Podman | `describe_runtime` → `load_data` → `query_data` |
 | `chrome-pilot` | Drives the Chrome on this machine over CDP — pages, input, a11y snapshots, console, network, screencast | Google Chrome installed; **tier 4, see the doctrine** | `new_page` → `take_snapshot` |
 | `voice-studio` | Multi-speaker **Japanese** narrated audio | AivisSpeech Engine running locally | `list_speakers` → `synthesize_script` → `master` |
+| `voice-scribe` | A transcript from an audio / video recording — local whisper.cpp, no audio leaves the machine | macOS arm64 + Metal; model weights downloaded | `list_models` → `transcribe` → `check_job` |
 | `video-studio` | MP4 from per-page image + audio pairs | ffmpeg; audio from upstream | `master` |
 | `image-forge` | Locally generated images (diffusion) | macOS arm64 + Metal, 16 GB RAM min, model weights downloaded | `list_models` → `generate` / `upscale` → `check_job` |
 | `ask-gemini` | A second opinion from Vertex AI Gemini | Vertex AI config | `ask_gemini` |
@@ -114,6 +115,7 @@ Proxies — infrastructure, not tools you pick per task:
 | **A live page you must actually drive** (a form, a login, a UI you are developing) | `chrome-pilot`: `new_page` → `take_snapshot` → act on the `uid`s it returns. This is your Chrome on your network. For a URL **under investigation**, use the URL row instead — the browser is tier 4 |
 | **A manuscript or script to voice** | `voice-studio` (Japanese only). For a fuller workflow, the `radio-drama` / `multi-actor-narration` skills already drive it |
 | **Slides + narration to combine** | `voice-studio` per page → `video-studio` `master`. Page duration comes from its audio, so A/V sync is automatic |
+| **A recording to transcribe** (a meeting, an interview, a video's audio track) | `voice-scribe`: `list_models` → `transcribe` → `check_job`. Fully local — no audio leaves the machine, nothing is metered, and it can label who is speaking. The output envelope is `gem-transcribe`-compatible, so downstream consumers (the `meeting-notes` skill included) read local and cloud transcripts with one parser. The `gem-transcribe` CLI (Vertex AI) is the cloud counterpart when this machine cannot run the model — but investigation material stays local |
 | **A prompt for an image** | `image-forge` locally, or the `gem-image` CLI for cloud Gemini |
 | **A design or debugging question you are stuck on** | `ask-llm` (local, nothing leaves the machine) before `ask-gemini` (stronger, but the prompt goes to Vertex AI) |
 
@@ -154,12 +156,12 @@ voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-st
   free plan is lower still. Both cache locally, so a repeated question costs
   nothing — do not defeat that by forcing a refresh out of habit.
 - **Long jobs are async.** `pcap-analyzer`, `image-forge`, `voice-studio`,
-  `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
+  `voice-scribe`, `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
   `check_job`. A "processing" status is normal, not an error — and that
   applies to `urlscan-lookup` `get_result` too.
 - **Results come back as files, not bytes.** The media servers and the large
-  results of `asn-lookup` / `abuse-lookup` / `pcap-analyzer` / `splunk-mcp` are
-  written into a workspace and returned as paths. Read the file; never expect
+  results of `asn-lookup` / `abuse-lookup` / `pcap-analyzer` / `splunk-mcp` /
+  `voice-scribe` are written into a workspace and returned as paths. Read the file; never expect
   inline payloads — and never narrow a query just to force one back inline.
 - **Your own browser is the loudest tool here.** `chrome-pilot` loads pages
   from this machine, on this network. Everything it fetches is a visit the
@@ -190,7 +192,7 @@ three servers without one, to their `tools/list` descriptions.
 | [references/log-search.md](references/log-search.md) | `splunk-mcp` |
 | [references/data-analysis.md](references/data-analysis.md) | `data-toolbox` |
 | [references/browser.md](references/browser.md) | `chrome-pilot` |
-| [references/media.md](references/media.md) | `voice-studio`, `video-studio`, `image-forge` |
+| [references/media.md](references/media.md) | `voice-studio`, `video-studio`, `image-forge`, `voice-scribe` |
 | [references/llm-and-proxies.md](references/llm-and-proxies.md) | `ask-gemini`, `ask-llm`, `slack-mcp-extender`, `mcp-guardian` |
 
 Per-repo descriptions of every tool above live in the
