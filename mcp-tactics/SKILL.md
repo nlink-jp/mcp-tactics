@@ -97,7 +97,7 @@ Proxies — infrastructure, not tools you pick per task:
 | Proxy | Role |
 |---|---|
 | `slack-mcp-extender` | Transparent proxy over the official Slack MCP; adds `ext_file_upload`, `ext_file_upload_to_thread`, `ext_file_download`. Every `slack_*` tool passes through unchanged — if a Slack tool exists, use it normally |
-| `mcp-guardian` | Governance proxy — audit receipts, tool masking, budget limits. Operator-configured; a masked tool is masked deliberately, so do not route around it |
+| `mcp-bridge` | stdio ⇄ Streamable HTTP bridge for MCP servers that demand a pre-registered OAuth client (official Slack MCP, GitHub Apps, Entra ID). Transparent: the upstream's tools appear as if the server were local — use them normally. An authentication failure is fixed at the operator's terminal, not by retrying |
 
 ## Decision table — input artifact to route
 
@@ -193,7 +193,7 @@ three servers without one, to their `tools/list` descriptions.
 | [references/data-analysis.md](references/data-analysis.md) | `data-toolbox` |
 | [references/browser.md](references/browser.md) | `chrome-pilot` |
 | [references/media.md](references/media.md) | `voice-studio`, `video-studio`, `image-forge`, `voice-scribe` |
-| [references/llm-and-proxies.md](references/llm-and-proxies.md) | `ask-gemini`, `ask-llm`, `slack-mcp-extender`, `mcp-guardian` |
+| [references/llm-and-proxies.md](references/llm-and-proxies.md) | `ask-gemini`, `ask-llm`, `slack-mcp-extender`, `mcp-bridge` |
 
 Per-repo descriptions of every tool above live in the
 [org profile README](https://github.com/nlink-jp/.github/blob/main/profile/README.md).

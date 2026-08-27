@@ -22,6 +22,17 @@ server, a proxy succession, and a stale skill pointer.
   unchanged. New decision-table row for recordings, and a playbook section in
   `references/media.md`.
 
+### Changed
+
+- **`mcp-guardian` → `mcp-bridge` in the proxy table.** The governance proxy
+  was archived on 2026-08-23, its governance layer never having entered
+  service; the bridge role it actually performed continues as `mcp-bridge`
+  (stdio ⇄ Streamable HTTP for servers demanding a pre-registered OAuth
+  client). The standing instruction "a masked tool is masked deliberately"
+  is retired with it: the bridge masks nothing, so a missing tool now means
+  the upstream does not offer it, and an authentication failure is the
+  operator's to fix rather than a call to retry.
+
 ## [0.3.0] - 2026-08-10
 
 Catches the skill up with the fleet's twentieth server, `otx-lookup`.

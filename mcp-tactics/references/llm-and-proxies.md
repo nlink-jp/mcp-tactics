@@ -56,21 +56,26 @@ Posting to Slack is an outward-facing action. Get explicit confirmation of the
 channel, the thread, and the file before uploading, and remember that a file
 posted to a channel is visible to everyone in it.
 
-## mcp-guardian
+## mcp-bridge
 
-A governance proxy in front of MCP servers: hash-chained audit receipts per tool
-call, failure-based constraint learning, budget and convergence limits, schema
-validation, and **tool masking**.
+A protocol-and-auth bridge, not a policy layer: it connects a stdio-only MCP
+client to a Streamable HTTP MCP server that demands a **pre-registered OAuth
+client** — the official Slack MCP, GitHub Apps, Microsoft Entra ID, and similar
+enterprise SaaS that do not support Dynamic Client Registration. (Servers that
+support DCR need no bridge; capable clients reach those directly.)
 
-You may not notice it, and that is the design. Two things follow:
+When it is in the path you should not notice it: the upstream's tools appear as
+if the server were local, and nothing is added, masked, or recorded. Two things
+follow:
 
-- **A masked tool is masked deliberately.** If an expected tool is absent, the
-  operator hid it. Do not look for another route to the same capability; say the
-  tool is unavailable.
-- **Repeating a failed call may be blocked by design.** The proxy learns from
-  failures to stop retry loops. A refusal that mentions a prior failure means
-  change the approach, not the retry count.
+- **A missing tool means the upstream does not offer it.** There is no masking
+  layer to suspect and nothing to route around.
+- **An authentication failure is the operator's to fix, not yours to retry.**
+  Client registration happens in the provider's admin console and login at the
+  operator's terminal; no tool call can repair an expired or absent login.
+  Report it and stop.
 
-Every call you make through it is recorded in a tamper-evident receipt chain.
-That is an argument for making the deliberate call rather than the exploratory
-one — the record is the point.
+Its predecessor `mcp-guardian` wrapped the same bridge in a governance layer —
+audit receipts, tool masking, budget limits — and was archived in August 2026
+with that layer never having entered service. Guidance that mentions masked
+tools or receipt chains describes the archived proxy, not the current fleet.
