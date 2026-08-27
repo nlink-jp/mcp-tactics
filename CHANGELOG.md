@@ -33,6 +33,12 @@ server, a proxy succession, and a stale skill pointer.
   the upstream does not offer it, and an authentication failure is the
   operator's to fix rather than a call to retry.
 
+### Fixed
+
+- The voicing row pointed to the `radio-drama` skill, which was merged into
+  `multi-actor-narration` and deleted upstream — the pointer now names only
+  the surviving skill.
+
 ## [0.3.0] - 2026-08-10
 
 Catches the skill up with the fleet's twentieth server, `otx-lookup`.

@@ -40,9 +40,9 @@ Prerequisite: the AivisSpeech Engine must be running locally. Voice models carry
 their own licences — the server has a license review workflow; honour it before
 publishing anything.
 
-For full workflows, the `radio-drama` and `multi-actor-narration` skills already
-drive this server (script conversion, speaker attribution, performance
-direction). Prefer the skill over hand-rolling the pipeline.
+For full workflows, the `multi-actor-narration` skill already drives this
+server (script conversion, speaker attribution, performance direction). Prefer
+the skill over hand-rolling the pipeline.
 
 ## video-studio
 
