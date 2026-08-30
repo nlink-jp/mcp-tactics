@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] - 2026-08-31
+
+### Changed
+
+- Followed the lookup servers off file mediation. `get_sample_info` returns the
+  MalwareBazaar record inline in `record` and no longer takes a
+  `workspace_root`; `get_pulse` pages a feed dump's indicators with `limit` +
+  `page` instead of spilling them to a file.
+
 ## [0.5.0] - 2026-08-30
 
 ### Added
