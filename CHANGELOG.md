@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.5.0] - 2026-08-30
 
 ### Added
 
@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - The "recording to transcribe" row now presents two servers with no default,
   and states the one case that is not a trade-off: investigation material
   stays local.
+- `gem-scribe` also translates and names speakers (`translate_to`,
+  `speaker_hints`); `voice-scribe` has no equivalent, so that is a second
+  reason to reach for the cloud one on a meeting.
+- `gem-transcribe` is archived. It was the envelope `voice-scribe` was
+  described as compatible with, so those references now name `gem-scribe`.
 
 ## [0.4.0] - 2026-08-28
 

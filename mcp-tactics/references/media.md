@@ -122,6 +122,12 @@ output envelope.
   for it on a meeting with a large cast
 - No models to download and no Apple Silicon requirement; it needs a Vertex AI
   project and credentials instead
+- It also **translates and names speakers** — `translate_to` puts a translation
+  beside the original in the same `text` map, and `speaker_hints` assigns real
+  names to `spk:N`. Both are a second pass over the transcript text, so a
+  failure there costs the enrichment and not the transcript; anything left
+  behind is reported in `warning`. `voice-scribe` has no equivalent, which is
+  a second reason to reach for this server on a meeting
 - Results carry a **`warning`** field when the transcript is well-formed but
   probably wrong: speakers collapsed into one (two similar voices are returned
   as a single speaker, with no error), a speaker count past what attribution is
