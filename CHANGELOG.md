@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **`gem-scribe`** — cloud transcription on Vertex AI's dedicated model, the
+  counterpart of `voice-scribe`. Same tool shapes and the same output
+  envelope, so switching between them costs nothing; up to 8 speakers against
+  voice-scribe's 4, at the price of metering and of the audio leaving the
+  machine.
+- A fifth corollary to the doctrine. Re-deriving the ranking's endpoints for
+  the new server did not move them — it cannot contact a party under
+  investigation — but it surfaced an axis the ladder does not measure: **the
+  ladder ranks who sees that you asked, not who sees what you have.** A
+  recording under investigation handed to a cloud transcription service has
+  left your control regardless of tier, so that case is decided before the
+  cost trade-off is considered.
+
+### Changed
+
+- The "recording to transcribe" row now presents two servers with no default,
+  and states the one case that is not a trade-off: investigation material
+  stays local.
+
 ## [0.4.0] - 2026-08-28
 
 Catches the skill up with the fleet as of late August: the twenty-first

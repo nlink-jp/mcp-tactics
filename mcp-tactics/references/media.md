@@ -1,9 +1,10 @@
-# Media — voice-studio, video-studio, image-forge, voice-scribe
+# Media — voice-studio, video-studio, image-forge, voice-scribe, gem-scribe
 
-Four servers that work media on local hardware: three produce artifacts, and
-`voice-scribe` runs the other way, turning recordings into text. All four are
-file-mediated (outputs are paths, never inline bytes) and async for heavy work.
-Call each server's `get_usage` before first use.
+Five media servers: three produce artifacts on local hardware, and two run the
+other way, turning recordings into text — `voice-scribe` locally and
+`gem-scribe` through Vertex AI. All of them are file-mediated (outputs are
+paths, never inline bytes) and async for heavy work. Call each server's
+`get_usage` before first use.
 
 ## Division of labour
 
@@ -105,10 +106,34 @@ an incident) belongs here rather than in any cloud transcription API.
   read the file rather than re-running a narrower job
 - It can label **who is speaking**, not just what was said — useful before
   handing a meeting recording to the `meeting-notes` skill
-- The output envelope is **`gem-transcribe`-compatible**, so downstream
-  parsers take a local and a cloud transcript interchangeably
+- The output envelope is shared with **`gem-scribe`**, so downstream parsers
+  take a local and a cloud transcript interchangeably
 
-The cloud counterpart is the `gem-transcribe` CLI (Vertex AI Gemini). Choose
-`voice-scribe` when the audio should not leave the machine or nothing should be
-metered; choose `gem-transcribe` when this machine cannot run the model. For
-material under investigation the choice is already made: it stays local.
+## gem-scribe — recordings to text, through Vertex AI
+
+The cloud counterpart of `voice-scribe`, on a **dedicated transcription model**
+rather than a general one. Same tool shapes, so switching costs nothing:
+`get_usage` → `transcribe` → `check_job`, the same workspace model, and the same
+output envelope.
+
+- **The audio leaves the machine and the call is metered** (~$0.30 per hour).
+  That is the whole reason the choice exists
+- **Up to 8 speakers**, against `voice-scribe`'s 4 — the usual reason to reach
+  for it on a meeting with a large cast
+- No models to download and no Apple Silicon requirement; it needs a Vertex AI
+  project and credentials instead
+- Results carry a **`warning`** field when the transcript is well-formed but
+  probably wrong: speakers collapsed into one (two similar voices are returned
+  as a single speaker, with no error), a speaker count past what attribution is
+  reliable for, or no timings at all. You cannot hear the audio — read it
+
+## Choosing between the two
+
+Neither is the default.
+
+- **Material under investigation stays local.** A customer call, an incident
+  voicemail, anything whose content should not reach a third party: use
+  `voice-scribe`. This decision is not a cost trade-off and is not reopened.
+- Otherwise: cost and privacy favour `voice-scribe`; accuracy, speed and a cast
+  larger than four favour `gem-scribe`.
+- Either output feeds the `meeting-notes` skill unchanged.

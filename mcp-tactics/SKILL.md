@@ -36,7 +36,7 @@ tier 4 only when you can justify it in the writeup.
 | **3 — target contact, by proxy** | The party under investigation sees a visit **from urlscan.io** | `urlscan-lookup` (`scan_url`) |
 | **4 — target contact, from you** | The party under investigation sees a visit **from your IP, with your browser** | `chrome-pilot` (`navigate_page`, and anything that loads a resource) |
 
-Four corollaries that are easy to get wrong:
+Five corollaries that are easy to get wrong:
 
 - `urlscan-lookup` spans tiers 2 and 3. `search` queries urlscan's historical
   database and never touches the target; `scan_url` sends urlscan's browser to
@@ -49,6 +49,14 @@ Four corollaries that are easy to get wrong:
   the risk follows the capability, not the server's purpose.
 - Tier 1's offline servers need their local cache populated first (`update_db`
   / `update_list`). A stale or absent cache is a setup step, not a dead end.
+- **The ladder ranks who sees that you asked. It does not rank who sees what you
+  have.** `gem-scribe` cannot contact a party under investigation, so it sits
+  outside the ladder entirely — and it still uploads the recording to a third
+  party. For material under investigation that is the more serious exposure of
+  the two: a customer call or an incident voicemail handed to a cloud
+  transcription service has left your control, whatever tier the ladder would
+  have assigned. Transcribe it with `voice-scribe` instead. The same reasoning
+  applies to anything else that sends content rather than a query.
 - **Inside tier 2 there is a second axis: whether the query is attributable to
   you.** `whois-lookup`, `doh-lookup` and `rdns-lookup` are anonymous reads —
   the third party sees a query, not a querent. `abuse-lookup`, `urlscan-lookup`
@@ -87,6 +95,7 @@ Production and analysis layer:
 | `chrome-pilot` | Drives the Chrome on this machine over CDP — pages, input, a11y snapshots, console, network, screencast | Google Chrome installed; **tier 4, see the doctrine** | `new_page` → `take_snapshot` |
 | `voice-studio` | Multi-speaker **Japanese** narrated audio | AivisSpeech Engine running locally | `list_speakers` → `synthesize_script` → `master` |
 | `voice-scribe` | A transcript from an audio / video recording — local whisper.cpp, no audio leaves the machine | macOS arm64 + Metal; model weights downloaded | `list_models` → `transcribe` → `check_job` |
+| `gem-scribe` | A transcript from a recording — Vertex AI's dedicated transcription model, up to 8 speakers | Vertex AI config; **audio leaves the machine and is metered** | `get_usage` → `transcribe` → `check_job` |
 | `video-studio` | MP4 from per-page image + audio pairs | ffmpeg; audio from upstream | `master` |
 | `image-forge` | Locally generated images (diffusion) | macOS arm64 + Metal, 16 GB RAM min, model weights downloaded | `list_models` → `generate` / `upscale` → `check_job` |
 | `ask-gemini` | A second opinion from Vertex AI Gemini | Vertex AI config | `ask_gemini` |
@@ -115,7 +124,7 @@ Proxies — infrastructure, not tools you pick per task:
 | **A live page you must actually drive** (a form, a login, a UI you are developing) | `chrome-pilot`: `new_page` → `take_snapshot` → act on the `uid`s it returns. This is your Chrome on your network. For a URL **under investigation**, use the URL row instead — the browser is tier 4 |
 | **A manuscript or script to voice** | `voice-studio` (Japanese only). For a fuller workflow, the `multi-actor-narration` skill already drives it |
 | **Slides + narration to combine** | `voice-studio` per page → `video-studio` `master`. Page duration comes from its audio, so A/V sync is automatic |
-| **A recording to transcribe** (a meeting, an interview, a video's audio track) | `voice-scribe`: `list_models` → `transcribe` → `check_job`. Fully local — no audio leaves the machine, nothing is metered, and it can label who is speaking. The output envelope is `gem-transcribe`-compatible, so downstream consumers (the `meeting-notes` skill included) read local and cloud transcripts with one parser. The `gem-transcribe` CLI (Vertex AI) is the cloud counterpart when this machine cannot run the model — but investigation material stays local |
+| **A recording to transcribe** (a meeting, an interview, a video's audio track) | Two servers, and **neither is the default**. `voice-scribe`: `list_models` → `transcribe` → `check_job` — fully local, no audio leaves the machine, nothing is metered, up to 4 speakers. `gem-scribe`: `get_usage` → `transcribe` → `check_job` — more accurate and faster, up to 8 speakers, but the audio goes to Vertex AI and is metered (~$0.30/hour). **Investigation material stays local: use `voice-scribe`.** Otherwise choose by what the task needs — cost favours `voice-scribe`, accuracy and a large cast favour `gem-scribe`. Both share one output envelope, so downstream consumers (the `meeting-notes` skill included) read either with one parser. `gem-scribe` results carry a `warning` field when the transcript is well-formed but probably wrong (speakers collapsed into one, an experimental speaker count) — read it |
 | **A prompt for an image** | `image-forge` locally, or the `gem-image` CLI for cloud Gemini |
 | **A design or debugging question you are stuck on** | `ask-llm` (local, nothing leaves the machine) before `ask-gemini` (stronger, but the prompt goes to Vertex AI) |
 
@@ -156,7 +165,7 @@ voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-st
   free plan is lower still. Both cache locally, so a repeated question costs
   nothing — do not defeat that by forcing a refresh out of habit.
 - **Long jobs are async.** `pcap-analyzer`, `image-forge`, `voice-studio`,
-  `voice-scribe`, `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
+  `voice-scribe`, `gem-scribe`, `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
   `check_job`. A "processing" status is normal, not an error — and that
   applies to `urlscan-lookup` `get_result` too.
 - **Results come back as files, not bytes.** The media servers and the large
