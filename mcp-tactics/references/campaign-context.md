@@ -25,7 +25,10 @@ second opinion, and prefer the sibling's answer when the two disagree.
    of pulses that named it.
 2. **`get_pulse`** with `indicators: true` — the pivot. Take a `pulse_id` from
    step 1 and you have the other indicators reported alongside it. **No API key
-   needed**: the pulse detail embeds them.
+   needed**: the pulse detail embeds them. They come back inline, so bound the
+   page with `limit` and walk it with `page` — an `indicator_count` in the
+   thousands is a feed dump, and you almost certainly want to judge the pulse
+   before pulling all of it.
 3. **`search_pulses`** — only when you have a campaign *name* rather than an
    indicator. Requires an API key.
 

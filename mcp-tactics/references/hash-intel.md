@@ -17,8 +17,9 @@ to use early in a triage.
    AV/EDR log into one call instead of looping.
 2. **`get_sample_info`** — only when the compact evidence is not enough and
    you need the full MalwareBazaar record (vendor intel, code-signing
-   certificates, fuzzy hashes). Needs an abuse.ch Auth-Key and a
-   `workspace_root`; the record arrives as a file, not inline.
+   certificates, fuzzy hashes). Needs an abuse.ch Auth-Key. The record comes
+   back inline in `record`, a few KB of dense vendor intel — one hash at a
+   time, so do not loop it over a sweep.
 
 ## Reading the four-way verdict
 
