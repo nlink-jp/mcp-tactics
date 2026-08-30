@@ -41,7 +41,9 @@ covers selection, ordering, and pitfalls only.
    This is where the address to report to comes from.
 5. **`abuse-lookup`** — last, because it is the only metered step. `check_ip`
    for the score and category summary; `get_reports` only when the individual
-   reports matter (large pages are written to a file in the workspace you pass).
+   reports matter — one page comes back inline, so size it with `per_page` and
+   walk `page` while `has_next_page` holds. Every page is a metered request:
+   fetch what you need once rather than re-asking for what you already read.
 
 Skipping straight to step 5 is the common mistake: the score is meaningless
 without knowing whether step 2 already explained the address.

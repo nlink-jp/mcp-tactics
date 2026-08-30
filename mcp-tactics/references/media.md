@@ -2,9 +2,12 @@
 
 Five media servers: three produce artifacts on local hardware, and two run the
 other way, turning recordings into text — `voice-scribe` locally and
-`gem-scribe` through Vertex AI. All of them are file-mediated (outputs are
-paths, never inline bytes) and async for heavy work. Call each server's
-`get_usage` before first use.
+`gem-scribe` through Vertex AI. All of them are file-mediated — artifacts are
+paths under a workspace, never inline bytes; a short transcript is the one
+exception — and async for heavy work. Pass a `workspace_root` you can **read
+back** (your session or working directory when you have one): every result is a
+path under it, so a workspace you cannot open leaves you holding a path to
+nothing. Call each server's `get_usage` before first use.
 
 ## Division of labour
 

@@ -55,7 +55,9 @@ to the target.
 
 `get_screenshot` is worth fetching for a phishing verdict: the rendered page is
 what a recipient would have seen, and brand impersonation is visible there and
-nowhere in the JSON.
+nowhere in the JSON. The screenshot rides back as inline image content when it
+fits (4 MiB), with the saved path alongside — look at the image directly rather
+than reasoning about a path.
 
 `get_quota` before a batch. The free plan's per-action quotas are low, and they
 differ per action — a scan and a search do not draw from the same pool.

@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.2] - 2026-08-31
+
+### Changed
+
+- Finished the sync the v0.5.1 follow-up started, after an audit of every
+  reference against the servers as released today:
+  - **network-intel**: `get_reports` no longer writes large pages to a
+    workspace file — the tactic is now `per_page`-sized inline pages walked
+    with `page`, fetched once because every page is metered.
+  - **url-triage**: `get_screenshot` returns the PNG as inline image content
+    when it fits, so the tactic is to look at the image, not reason about a
+    path.
+  - **media**: the file-mediation claim now carries its real exception (short
+    transcripts come back inline — the intro used to contradict the
+    voice-scribe section) and the read-back rule: pass a `workspace_root` you
+    can open, or every result is a path to nothing.
+- Confirmed unchanged on the same audit: splunk-mcp's `workspace_root`
+  (log-search), rdns's `truncated`/`matching_records` reading, and the
+  hash-intel / campaign-context updates from v0.5.1.
+
 ## [0.5.1] - 2026-08-31
 
 ### Changed
