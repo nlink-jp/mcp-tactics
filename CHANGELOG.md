@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-09-01
+
+### Added
+
+- **`gti-lookup`** — Google Threat Intelligence context (tier 2): an
+  indicator's associated collections, sandbox behaviour served index-first,
+  GTI-syntax IOC corpus search, the vulnerability catalogue with ATT&CK
+  trees, and read-only LiveHunt ruleset inspection. New reference
+  `references/gti-intel.md`; a new decision row for CVEs; the file-hash row
+  gains the association/behaviour follow-up.
+- **A conditional-presence rule, stated wherever the server is named**:
+  `gti-lookup` requires a commercial GTI licence, so unlicensed environments
+  simply do not have it configured — its absence is expected, and every
+  route that names it applies only when it is present.
+
+### Changed
+
+- The tier-2 attribution corollary gains its far end: `gti-lookup` queries
+  are always recorded against a commercial licence, with no anonymous mode —
+  exhaust the anonymous reads first when attribution matters.
+- Fleet count corrected to 23 servers (the v0.5.0 gem-scribe addition never
+  bumped the stated 21).
+
 ## [0.5.2] - 2026-08-31
 
 ### Changed

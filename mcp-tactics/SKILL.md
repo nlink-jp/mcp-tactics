@@ -1,11 +1,14 @@
 ---
 name: mcp-tactics
-description: Choose the right nlink-jp MCP server for the situation, and call them in the right order. Use when investigating an IP address, domain, URL, file hash (MD5/SHA1/SHA256), MAC address / BSSID, or a pcap capture; when searching your own Splunk logs; when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python for data; when driving a real browser; when producing narrated Japanese audio, a presentation video, or a locally generated image; when transcribing a recording locally; or when a second opinion from another model would help. Also for 調査・トリアージ・不審IP・不審URL・不審メール・ハッシュ照合・マルウェア判定・パケット解析・ログ検索・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・文字起こし・セカンドオピニオン. Read this before reaching for any in-house MCP server, and especially before any lookup or page load that could touch the party under investigation.
+description: Choose the right nlink-jp MCP server for the situation, and call them in the right order. Use when investigating an IP address, domain, URL, file hash (MD5/SHA1/SHA256), MAC address / BSSID, CVE, or a pcap capture; when asking what Google Threat Intelligence knows about an indicator or how a sample behaves in a sandbox; when searching your own Splunk logs; when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python for data; when driving a real browser; when producing narrated Japanese audio, a presentation video, or a locally generated image; when transcribing a recording locally; or when a second opinion from another model would help. Also for 調査・トリアージ・不審IP・不審URL・不審メール・ハッシュ照合・マルウェア判定・脆弱性情報・サンドボックス挙動・パケット解析・ログ検索・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・文字起こし・セカンドオピニオン. Read this before reaching for any in-house MCP server, and especially before any lookup or page load that could touch the party under investigation.
 ---
 
 # MCP Tactics — nlink-jp MCP servers
 
-21 MCP servers and 2 proxies, organized by *when to reach for them*.
+23 MCP servers and 2 proxies, organized by *when to reach for them*. One of
+them — `gti-lookup` — exists only where a commercial GTI licence does: its
+absence from your tool list is expected in unlicensed environments, and every
+route below that names it applies only when it is configured.
 
 ## The one contract
 
@@ -32,7 +35,7 @@ tier 4 only when you can justify it in the writeup.
 | Tier | Who observes | Servers |
 |---|---|---|
 | **1 — no external observer** | Nobody outside this machine or your own infrastructure | `asn-lookup`, `mac-lookup`, `tor-exit-lookup`, `icloud-relay-lookup`, `pcap-analyzer`, `splunk-mcp` |
-| **2 — third party** | A registry, resolver, or reputation service | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `malware-lookup`, `otx-lookup`, `urlscan-lookup` (`search`) |
+| **2 — third party** | A registry, resolver, or reputation service | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `malware-lookup`, `otx-lookup`, `gti-lookup`, `urlscan-lookup` (`search`) |
 | **3 — target contact, by proxy** | The party under investigation sees a visit **from urlscan.io** | `urlscan-lookup` (`scan_url`) |
 | **4 — target contact, from you** | The party under investigation sees a visit **from your IP, with your browser** | `chrome-pilot` (`navigate_page`, and anything that loads a resource) |
 
@@ -65,7 +68,9 @@ Five corollaries that are easy to get wrong:
   still tier 1 and tier 4. But `otx-lookup` is the one server where the choice
   is yours per call — everything except pulse search works anonymously, and
   `anonymous: true` declines to identify you. Use it when the *fact that you
-  asked* is itself sensitive.
+  asked* is itself sensitive. `gti-lookup` sits at the far end of this axis:
+  every query is recorded against a commercial licence, with no anonymous
+  mode at all — when attribution matters, exhaust the anonymous reads first.
 
 ## Server index
 
@@ -83,6 +88,7 @@ Investigation layer:
 | `abuse-lookup` | IP reputation (AbuseIPDB) | 2 | API key; **1000 checks/day** | `check_ip` → `get_reports` |
 | `malware-lookup` | Is this file hash a known-good file or known malware? | 2 | abuse.ch Auth-Key optional (family/tag enrichment) | `check_hash` → *(rarely)* `get_sample_info` |
 | `otx-lookup` | Is this indicator part of a known campaign? Adversary, malware family, ATT&CK, targeted industries — and the pivot to the other indicators a pulse carries | 2 | API key optional (adds pulse search + an exact indicator total) | `lookup_indicator` → `get_pulse` |
+| `gti-lookup` | What Google's index says: an indicator's associated collections, a sample's sandbox behaviour, GTI-syntax IOC corpus search, the vulnerability catalogue with ATT&CK trees, your LiveHunt rulesets | 2 | **Commercial GTI licence key** — the server is simply absent in unlicensed environments; use it only when configured | `lookup_ioc` / `search_iocs` |
 | `urlscan-lookup` | What a suspicious URL is and does | 2 / **3** | API key (free plan, low quota) | `search` → *(deliberate)* `scan_url` → `get_result` |
 | `pcap-analyzer` | What is inside a pcap / pcapng capture | 1 | Podman | `create_workspace` → `protocol_hierarchy` |
 | `splunk-mcp` | What your own Splunk already recorded | 1 | Splunk token; one server instance per Splunk host | `list_indexes` → `run_query` |
@@ -114,10 +120,11 @@ Proxies — infrastructure, not tools you pick per task:
 |---|---|
 | **An IP address** | `asn-lookup` (AS, country) → `tor-exit-lookup` + `icloud-relay-lookup` (is it an anonymizing egress at all?) → `rdns-lookup` (what else is hosted there — index read, no packet to the target) → `whois-lookup` (allocation) → `abuse-lookup` **last**, because it is the only metered one. `otx-lookup` answers a different question from all of them — *is this part of a known campaign* — so run it whenever the answer would change your triage, not as a step in the ladder. If your own telemetry is in Splunk, `splunk-mcp` slots in at the front: what *we* recorded is tier 1 and often decides whether the external ladder is worth walking |
 | **A domain** | `whois-lookup` (age, registrar, abuse contact) → `doh-lookup` (where it resolves now) → `rdns-lookup` (`lookup_subdomains` / `lookup_cnames` for the surrounding names) → `asn-lookup` on the resolved IPs. A days-old registration plus fresh NS is the signal, not any single field. `otx-lookup` in parallel for campaign context — note it asks a name as both `domain` and `hostname`, because OTX indexes each name under exactly one and answers 200 either way |
-| **A file hash** | `malware-lookup` `check_hash` (1–100 per call, MD5/SHA1/SHA256 auto-detected). Read the verdict as four-way: `conflicting` means known file **and** flagged — scrutinize, never auto-resolve (even EICAR is conflicting); `unknown` can still be registered in MalwareBazaar only, since enrichment runs on an MHR hit. `get_sample_info` only when the compact evidence is not enough. The VT link in each result is for a human browser, never an API to call. Then `otx-lookup` `lookup_indicator` for who reported the hash and under what campaign — `malware-lookup` says *what the file is*, `otx-lookup` says *whose operation it belongs to* |
+| **A file hash** | `malware-lookup` `check_hash` (1–100 per call, MD5/SHA1/SHA256 auto-detected). Read the verdict as four-way: `conflicting` means known file **and** flagged — scrutinize, never auto-resolve (even EICAR is conflicting); `unknown` can still be registered in MalwareBazaar only, since enrichment runs on an MHR hit. `get_sample_info` only when the compact evidence is not enough. The VT link in each result is for a human browser, never an API to call. Then `otx-lookup` `lookup_indicator` for who reported the hash and under what campaign — `malware-lookup` says *what the file is*, `otx-lookup` says *whose operation it belongs to*. Where `gti-lookup` is configured, its `lookup_ioc` adds Google's association context and `get_file_behaviour` the sandbox view (index first, then one section at a time) — questions no free sibling answers |
 | **A URL** | `urlscan-lookup` `search` first. Only if the passive record is empty *and* an active look is justified, `scan_url` (private) → `get_result` → `get_screenshot`. Feed observed IPs/domains back into the two rows above |
 | **An indicator that turned out to be reported** | `otx-lookup` `get_pulse` with the `pulse_id` from `lookup_indicator`, and `indicators: true` — this is the pivot from one indicator to the rest of a campaign, and it needs no API key. Read `incomplete` before you trust an empty answer, and `indicators_exact` before you trust a total. Pulses are community submissions: the author and vote counts come back so you can weigh them, and the tool never issues a verdict |
 | **A MAC address / BSSID** | `mac-lookup`. Read `vendor_lookup_applicable` **before** `vendor`: when false, the address is broadcast, multicast, or locally administered (a randomized MAC or virtual NIC) and no manufacturer exists to find — that is the answer, not a failed lookup |
+| **A CVE you need context on** | `gti-lookup` where configured: `search_threats` (`collection_type: vulnerability`) → `get_threat` on the `vulnerability--cve-...` id → `get_threat_mitre_tree` for the observed techniques and `get_threat_related` for the IOCs. Without the server, this row has no in-fleet answer — research it on the web |
 | **A pcap / pcapng** | `pcap-analyzer`: `create_workspace` → `protocol_hierarchy` → `list_conversations` → `query_packets` → `follow_stream` / `extract_objects`. Then send external IPs through the IP row, and hash extracted objects (`shasum -a 256`) for the file-hash row |
 | **A question about your own logs** | `splunk-mcp`: `list_indexes` → `list_sourcetypes` to learn the shape, then `run_query`. Nothing external observes it, so this is a tier 1 step — asking "have we seen this indicator ourselves?" belongs *before* the metered external ones, not after. Above the inline threshold the full result set lands as a JSONL file; hand that path to `data-toolbox` rather than re-running narrower searches |
 | **A CSV / JSON / JSONL / Parquet** | `data-toolbox`: `load_data` → `query_data`. Reach for `execute_code` only when SQL genuinely cannot express it |
@@ -195,6 +202,7 @@ three servers without one, to their `tools/list` descriptions.
 |---|---|
 | [references/network-intel.md](references/network-intel.md) | `asn-lookup`, `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `tor-exit-lookup`, `icloud-relay-lookup`, `mac-lookup` |
 | [references/campaign-context.md](references/campaign-context.md) | `otx-lookup` |
+| [references/gti-intel.md](references/gti-intel.md) | `gti-lookup` |
 | [references/url-triage.md](references/url-triage.md) | `urlscan-lookup` |
 | [references/hash-intel.md](references/hash-intel.md) | `malware-lookup` |
 | [references/pcap.md](references/pcap.md) | `pcap-analyzer` |
