@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-09-06
+
+### Added
+
+- **`bigquery-mcp`** — what your own BigQuery data warehouse holds
+  (tier 1: only your own project sees the job). Listed in the tier-1 row,
+  the investigation-layer index, and a new decision-table row for
+  "a question about your own data warehouse"; the IP row's "your own
+  telemetry first" now names it beside `splunk-mcp`. The server dry-runs
+  every query and refuses non-SELECT, out-of-allowlist and over-budget
+  queries — the row tells the agent to read the verdict rather than
+  suspect its own call or runtime.
+
+### Changed
+
+- Ordering endpoints re-derived: `bigquery-mcp` has no target-contact
+  capability, so the four-tier doctrine and its endpoints are unchanged.
+- Fleet count in README and AGENTS.md re-counted from the server index.
+
 ## [0.6.0] - 2026-09-01
 
 ### Added

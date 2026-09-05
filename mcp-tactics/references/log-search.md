@@ -1,4 +1,4 @@
-# Log search — splunk-mcp
+# Log search — splunk-mcp and bigquery-mcp
 
 Your own Splunk, over the REST API. Nobody outside your infrastructure
 observes the query, which makes this the cheapest source of evidence you have
@@ -68,10 +68,45 @@ can be re-allowed by the operator. If you hit it, say which command was
 rejected and why you wanted it — do not rewrite the search to smuggle the same
 effect past the check.
 
+## The same question against BigQuery — bigquery-mcp
+
+When the organisation's logs or business data live in a BigQuery data
+warehouse (Workspace audit exports, security exports, application tables),
+`bigquery-mcp` is the tier-1 source in the same sense as Splunk: only your
+own project sees the job. Call `get_usage` before first use; **one server
+instance per billing project**, so check which one you are talking to.
+
+Ordering is the same shape — learn the data before writing SQL:
+
+1. **`list_datasets`** → **`list_tables`** — what exists; the table list
+   carries each table's partition column.
+2. **`describe_table`** — the schema (nested records included), the
+   partition column and granularity, clustering, size. **Filtering on the
+   partition column is what keeps a query inside the budget.**
+3. **`dry_run`** when the cost is uncertain — bytes, whether the gate would
+   pass, and a warning when the estimate covers a partitioned table whole.
+4. **`query`** — it dry-runs first every time and refuses:
+   `statement_not_allowed` (anything BigQuery does not classify as one
+   SELECT — scripts, DML, DDL, EXPORT), `dataset_not_allowed` (a table or
+   routine outside the operator's allowlist), `budget_exceeded` (the billed
+   estimate above the operator's byte budget). **A refusal is the server's
+   verdict on the query, not a fault in your call or your runtime**: read
+   `code` and `details`, narrow the query (filter on the partition column,
+   fewer columns, aggregate — `LIMIT` does not reduce scanned bytes), or
+   report to the operator. Every error is `{code, message, retryable,
+   details}`; when `retryable` is true the server already retried once.
+
+Results come back as column-keyed rows and stop at `max_rows` or the
+response byte budget with `truncated: true` and BigQuery's exact
+`total_rows`. Unlike Splunk there is **no file**: aggregate in SQL rather
+than paging everything, and let the runtime keep a large result if it has
+somewhere to put it. Counts are exact here too — `total_rows` is BigQuery's
+own figure — and a surprising count is a finding about the data.
+
 ## Feeding the rest of the chain
 
-Splunk answers "did we see this?", and the lookup servers answer "what is
-this?". Run them in that order when both apply:
+Splunk and BigQuery answer "did we see this?", and the lookup servers answer
+"what is this?". Run them in that order when both apply:
 
 - An IP or domain from your own logs → the IP / domain rows in `SKILL.md`.
   Knowing the indicator appeared in your environment 200 times over three

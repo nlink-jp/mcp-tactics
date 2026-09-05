@@ -66,7 +66,7 @@ keep results inline is the wrong instinct; see
 
 - **A pcap** → [pcap.md](pcap.md). `pcap-analyzer` mounts the capture read-only
   and preserves its hash; loading packet exports into DuckDB loses that.
-- **A question your own Splunk already answers** → [log-search.md](log-search.md).
+- **A question your own Splunk or BigQuery already answers** → [log-search.md](log-search.md).
   Retrieval with an exact count belongs there; bring the result here.
 - **A one-line question about a small file** → reading the file directly is
   faster than provisioning a workspace and a container.
