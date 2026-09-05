@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.1] - 2026-09-06
+
+### Fixed
+
+- The skill's trigger (`description`) now names BigQuery: querying,
+  exploring or analysing your own data warehouse — any dataset, not only
+  audit exports — plus the Japanese terms BigQuery・データウェアハウス・DWH・
+  テーブル探索・SQL集計. v0.7.0 added the `bigquery-mcp` routes to the body
+  but not to the line clients use to decide whether to load the skill, so
+  a plain question about a BigQuery table never reached them.
+
 ## [0.7.0] - 2026-09-06
 
 ### Added
