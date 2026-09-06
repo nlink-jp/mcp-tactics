@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- `description` trimmed to 1,003 characters: claude.ai and the desktop app
+- `description` trimmed to 1,017 characters: claude.ai and the desktop app
   refuse a SKILL.md whose description exceeds 1,024 characters, and v0.7.1
   had grown to 1,085. Every trigger is kept, including the generic
   BigQuery one; only wording was tightened. The vendored validator does
