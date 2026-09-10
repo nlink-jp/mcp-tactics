@@ -20,6 +20,11 @@ It deliberately says nothing about arguments, return shapes, or error codes.
 > parameters, job lifecycle, and error recovery. Never guess an argument from
 > this file — it does not contain them, on purpose.
 
+> **If a server named here has no tools in your tool list**, the runtime
+> advertises MCP tools on request: load the server first with
+> `mcp_load <server>`, then call its entry tool. The system prompt's server
+> list says whether that applies to this session.
+
 Three servers ship no `get_usage`, and the absence is expected, not a fault:
 `ask-gemini` and `ask-llm` expose a single prompt-forwarding tool each, and
 `chrome-pilot` mirrors upstream `chrome-devtools-mcp`'s schemas so existing
