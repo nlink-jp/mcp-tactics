@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-09-12
+
+### Added
+
+- `web-fetch` — the fleet's 26th server: one URL's text, fetched from this
+  machine. Tier 4 beside `chrome-pilot` (a visit from your IP, without a
+  browser), so the tier-4 row and the doctrine now cover both, with a new
+  corollary that `address_not_allowed` is the server's own guard working. New
+  decision-table row "a URL you already have and need to read" (page with
+  `offset`, `doc_id` for a changed page, prefer it to `llm_context` for a
+  specific URL), the browser row and `references/browser.md` point readers of
+  published content at it, `references/web-search.md` records that
+  `llm_context` substitutes silently for URLs outside Brave's index, and
+  `references/web-fetch.md` holds the tool order and pitfalls. The trigger
+  (`description`) gains reading a web page by URL / ページ取得 with every
+  earlier trigger kept, and stays under 1,024 characters by tightening its
+  prose.
+
 ## [0.8.0] - 2026-09-12
 
 ### Added

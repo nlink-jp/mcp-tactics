@@ -1,8 +1,10 @@
 # Browser automation — chrome-pilot
 
 Drives the Chrome installed on this machine over the DevTools Protocol. It is
-the fleet's only **tier 4** server: every page it loads is a request from your
-IP address, with your browser, under whatever profile is loaded.
+one of the fleet's two **tier 4** servers, and the louder one: every page it
+loads is a request from your IP address, with your browser, under whatever
+profile is loaded. (The other, `web-fetch`, makes one plain GET without a
+browser — see [web-fetch.md](web-fetch.md).)
 
 This server ships **no `get_usage`** — its tool names and schemas mirror
 upstream `chrome-devtools-mcp` on purpose, so existing usage patterns
@@ -17,7 +19,7 @@ transfer. The `tools/list` descriptions are the reference for arguments.
 | A page whose console errors or network waterfall you need | `chrome-pilot` |
 | **A suspicious URL** | `urlscan-lookup` — see [url-triage.md](url-triage.md) |
 | **A URL from a phishing mail, a capture, or a log** | `urlscan-lookup` |
-| Reading published content where the fetch itself is uninteresting | Ordinary web fetch, not a whole browser |
+| Reading published content where the fetch itself is uninteresting | `web-fetch` — see [web-fetch.md](web-fetch.md); no browser, no cookies, still tier 4 |
 
 The middle rows are the ones that matter. An agent already holding a
 suspicious URL and a browser tool will be tempted to "just open it and look" —

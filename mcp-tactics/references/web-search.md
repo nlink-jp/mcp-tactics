@@ -38,6 +38,11 @@ the Search tools, what rate budget is left.
   model reads pages to compose the answer; whether it fetches them live is
   unverified. Searching *for* the indicator with `web_search` is an index
   read; use the URL row of the decision table for the rest.
+- **`llm_context` is not a fetch.** For a URL outside Brave's index it answers
+  with a *different* page and no error (measured: a two-day-old repository
+  page came back as an unrelated project of the same name). When the user
+  wants a specific URL read, use `web-fetch` — see
+  [web-fetch.md](web-fetch.md); `llm_context` is for the pages a search found.
 
 ## Setup the operator has to do
 
