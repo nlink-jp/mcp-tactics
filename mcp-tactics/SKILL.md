@@ -1,11 +1,11 @@
 ---
 name: mcp-tactics
-description: Choose the right nlink-jp MCP server for the situation, and call them in the right order. Use when investigating an IP address, domain, URL, file hash (MD5/SHA1/SHA256), MAC address / BSSID, CVE, or a pcap capture; when asking what Google Threat Intelligence knows about an indicator or how a sample behaves in a sandbox; when searching your own Splunk logs; when querying or exploring your own BigQuery data warehouse (any dataset); when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python for data; when driving a real browser; when producing narrated Japanese audio, a presentation video, or a locally generated image; when transcribing a recording locally; or when a second opinion from another model would help. Also for 調査・トリアージ・不審IP・不審URL・不審メール・ハッシュ照合・マルウェア判定・脆弱性情報・サンドボックス挙動・パケット解析・ログ検索・BigQuery・DWH・テーブル探索・SQL集計・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・文字起こし・セカンドオピニオン. Read this before reaching for any in-house MCP server, especially before anything that could touch the party under investigation.
+description: Pick the right nlink-jp MCP server and call them in the right order. Use when investigating an IP address, domain, URL, file hash (MD5/SHA1/SHA256), MAC address / BSSID, CVE, or a pcap capture; when asking what Google Threat Intelligence knows about an indicator or how a sample behaves in a sandbox; when searching the web or wanting a sourced answer; when searching your own Splunk logs; when querying or exploring your own BigQuery data warehouse (any dataset); when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python; when driving a real browser; when producing narrated Japanese audio, a presentation video or a local image; when transcribing a recording locally; or for a second opinion from another model. Also for 調査・トリアージ・不審IP・不審URL・不審メール・ハッシュ照合・マルウェア判定・脆弱性情報・サンドボックス挙動・パケット解析・Web検索・調べ物・ログ検索・BigQuery・DWH・テーブル探索・SQL集計・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・文字起こし・セカンドオピニオン. Read this before using any in-house MCP server, especially anything that could touch the party under investigation.
 ---
 
 # MCP Tactics — nlink-jp MCP servers
 
-23 MCP servers and 2 proxies, organized by *when to reach for them*. One of
+25 MCP servers and 2 proxies, organized by *when to reach for them*. One of
 them — `gti-lookup` — exists only where a commercial GTI licence does: its
 absence from your tool list is expected in unlicensed environments, and every
 route below that names it applies only when it is configured.
@@ -40,7 +40,7 @@ tier 4 only when you can justify it in the writeup.
 | Tier | Who observes | Servers |
 |---|---|---|
 | **1 — no external observer** | Nobody outside this machine or your own infrastructure | `asn-lookup`, `mac-lookup`, `tor-exit-lookup`, `icloud-relay-lookup`, `pcap-analyzer`, `splunk-mcp`, `bigquery-mcp` |
-| **2 — third party** | A registry, resolver, or reputation service | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `malware-lookup`, `otx-lookup`, `gti-lookup`, `urlscan-lookup` (`search`) |
+| **2 — third party** | A registry, resolver, reputation service, or search engine | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `malware-lookup`, `otx-lookup`, `gti-lookup`, `urlscan-lookup` (`search`), `brave-search` (`web_search`, `llm_context`) |
 | **3 — target contact, by proxy** | The party under investigation sees a visit **from urlscan.io** | `urlscan-lookup` (`scan_url`) |
 | **4 — target contact, from you** | The party under investigation sees a visit **from your IP, with your browser** | `chrome-pilot` (`navigate_page`, and anything that loads a resource) |
 
@@ -76,6 +76,13 @@ Five corollaries that are easy to get wrong:
   asked* is itself sensitive. `gti-lookup` sits at the far end of this axis:
   every query is recorded against a commercial licence, with no anonymous
   mode at all — when attribution matters, exhaust the anonymous reads first.
+  `brave-search` is keyed the same way — every query is billed to and recorded
+  against the operator's Brave account — and its two Answers tools go one step
+  further: Brave's model reads pages to compose the answer, and whether those
+  pages are fetched live or served from Brave's index is unverified. Searching
+  *for* an indicator is a tier-2 index read; asking `answer` or `research`
+  *about a URL under investigation* may cause a third party to visit it, so
+  treat that as tier 3 and use the URL row instead.
 
 ## Server index
 
@@ -110,6 +117,7 @@ Production and analysis layer:
 | `gem-scribe` | A transcript from a recording — Vertex AI's dedicated transcription model, up to 8 speakers, optional translation and speaker names | Vertex AI config; **audio leaves the machine and is metered** | `get_usage` → `transcribe` → `check_job` |
 | `video-studio` | MP4 from per-page image + audio pairs | ffmpeg; audio from upstream | `master` |
 | `image-forge` | Locally generated images (diffusion) | macOS arm64 + Metal, 16 GB RAM min, model weights downloaded | `list_models` → `generate` / `upscale` → `check_job` |
+| `brave-search` | What the web says: ranked results with snippets (`web_search`), page text pre-extracted to a token budget for grounding (`llm_context`), a Brave-grounded answer with citations from one search (`answer`) or from several iterations of searches (`research`) | Brave API keys, one per plan (Search / Answers); **every call is billed** — a web search costs a fraction of a cent, an answer about ten times that, research a multiple of an answer; nothing is cached | `get_usage` → `web_search` / `llm_context` → *(deliberate)* `answer` → *(last)* `research` |
 | `ask-gemini` | A second opinion from Vertex AI Gemini | Vertex AI config | `ask_gemini` |
 | `ask-llm` | A second opinion from a local model (LM Studio) | local OpenAI-compatible endpoint | `ask_llm` |
 
@@ -134,6 +142,7 @@ Proxies — infrastructure, not tools you pick per task:
 | **A pcap / pcapng** | `pcap-analyzer`: `create_workspace` → `protocol_hierarchy` → `list_conversations` → `query_packets` → `follow_stream` / `extract_objects`. Then send external IPs through the IP row, and hash extracted objects (`shasum -a 256`) for the file-hash row |
 | **A question about your own logs** | `splunk-mcp`: `list_indexes` → `list_sourcetypes` to learn the shape, then `run_query`. Nothing external observes it, so this is a tier 1 step — asking "have we seen this indicator ourselves?" belongs *before* the metered external ones, not after. Above the inline threshold the full result set lands as a JSONL file; hand that path to `data-toolbox` rather than re-running narrower searches |
 | **A question about your own data warehouse (BigQuery)** | `bigquery-mcp`: `list_tables` → `describe_table` (learn the partition column — filtering on it is what keeps a query inside the budget) → `query`. The server dry-runs every query and refuses one that is not a single SELECT, reads outside the allowlist, or would exceed the byte budget; a refusal is the server's verdict on the query, not a fault in your call or the runtime — read `code` and `details`, narrow the query, or report to the operator. Tier 1 like `splunk-mcp`: only your own project sees the job. Results stop at `max_rows` or the byte budget with `truncated: true` and `total_rows`; aggregate in SQL rather than paging everything |
+| **A question about the world** — documentation, a product, a price, a date, the news; anything your own data cannot answer | `brave-search`: `web_search` when you will read the sources yourself; `llm_context` when you want page text sized to your context (start with a small `max_tokens`); `answer` only when a one-paragraph sourced reply is what is wanted, since it costs about ten web searches; `research` last and with small caps — it runs several searches, bills every one of them, and cannot be stopped once dispatched. Read `meta` on every result for what it cost. Citations are unreliable for non-English replies: an empty `citations` never means "no sources exist", and a `note` on the result says when Brave returned none. Never feed a URL *under investigation* to `answer` / `research` — see the doctrine |
 | **A CSV / JSON / JSONL / Parquet** | `data-toolbox`: `load_data` → `query_data`. Reach for `execute_code` only when SQL genuinely cannot express it |
 | **A live page you must actually drive** (a form, a login, a UI you are developing) | `chrome-pilot`: `new_page` → `take_snapshot` → act on the `uid`s it returns. This is your Chrome on your network. For a URL **under investigation**, use the URL row instead — the browser is tier 4 |
 | **A manuscript or script to voice** | `voice-studio` (Japanese only). For a fuller workflow, the `multi-actor-narration` skill already drives it |
@@ -178,6 +187,10 @@ voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-st
 - **Quota is real.** `abuse-lookup` gets 1000 checks/day and `urlscan-lookup`'s
   free plan is lower still. Both cache locally, so a repeated question costs
   nothing — do not defeat that by forcing a refresh out of habit.
+- **`brave-search` is metered per call and caches nothing** (the Brave ToS
+  forbids it): an identical call is a second charge. Its results are Brave's
+  and their sources' — cite the URLs, do not store or redistribute them, and
+  never use them to train or evaluate a model.
 - **Long jobs are async.** `pcap-analyzer`, `image-forge`, `voice-studio`,
   `voice-scribe`, `gem-scribe`, `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
   `check_job`. A "processing" status is normal, not an error — and that
@@ -217,6 +230,7 @@ three servers without one, to their `tools/list` descriptions.
 | [references/data-analysis.md](references/data-analysis.md) | `data-toolbox` |
 | [references/browser.md](references/browser.md) | `chrome-pilot` |
 | [references/media.md](references/media.md) | `voice-studio`, `video-studio`, `image-forge`, `voice-scribe` |
+| [references/web-search.md](references/web-search.md) | `brave-search` |
 | [references/llm-and-proxies.md](references/llm-and-proxies.md) | `ask-gemini`, `ask-llm`, `slack-mcp-extender`, `mcp-bridge` |
 
 Per-repo descriptions of every tool above live in the

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-09-12
+
+### Added
+
+- `brave-search` — the fleet's 25th server and its first web-search one.
+  Tier 2 (a keyed third-party index read) for `web_search` / `llm_context`;
+  the two Answers tools are flagged as possibly fetching pages, so a URL
+  under investigation never goes to them. New decision-table row "a
+  question about the world", a standing caution on metering and the Brave
+  ToS, and `references/web-search.md` with the tool order and pitfalls
+  (citations unreliable for non-English replies; `research` cannot be
+  cancelled). The trigger (`description`) gains web search / Web検索 with
+  every earlier trigger kept, and stays under 1,024 characters by tightening
+  its prose.
+
 ## [0.7.2] - 2026-09-06
 
 ### Fixed
