@@ -3,8 +3,9 @@
 Five media servers: three produce artifacts on local hardware, and two run the
 other way, turning recordings into text — `voice-scribe` locally and
 `gem-scribe` through Vertex AI. All of them are file-mediated — artifacts are
-paths under a workspace, never inline bytes; a short transcript is the one
-exception — and async for heavy work.
+paths under a workspace, never inline bytes. The two scribes also return the
+transcript *text* in the response, capped, because text is data — and async for
+heavy work.
 
 **Every call names `work_dir`: the absolute path of a directory you can read
 back** (your session or working directory). It is required and there is no
@@ -112,9 +113,10 @@ an incident) belongs here rather than in any cloud transcription API.
   constraint
 - **Model weights are not bundled.** `list_models` shows what is actually
   installed; read it before promising a language or speaker labels
-- `transcribe` enqueues and returns a `job_id`; poll `check_job`. A short
-  transcript comes back inline, a long one as a file path with an excerpt —
-  read the file rather than re-running a narrower job
+- `transcribe` enqueues and returns a `job_id`; poll `check_job`. The result
+  carries the transcript up to `max_bytes` (default 65536, `0` = no cap); past
+  it, `truncated` and an exact `omitted_bytes` say what is missing and the file
+  holds all of it. Raise the cap or read the file — never re-run a narrower job
 - It can label **who is speaking**, not just what was said — useful before
   handing a meeting recording to the `meeting-notes` skill
 - The output envelope is shared with **`gem-scribe`**, so downstream parsers
