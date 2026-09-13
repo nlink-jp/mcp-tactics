@@ -46,21 +46,27 @@ rather than romanizing labels.
 
 ## Workspaces are the unit of state
 
-Tables, `/work` contents, and the container live in one workspace. `load_data`
-reads from the host through configured `allowed_paths`; `load_from_work` reads
-what already lives in `/work` and bypasses that check, which is why it is the
-right tool for `execute_code` output and the wrong tool for new host files.
+Tables, `/work` contents, and the container live in one workspace, and the
+workspace lives in **your** `work_dir`: every tool takes it, it is required,
+and `<work_dir>/<workspace_id>/work` is what the container sees as `/work`.
+That is why the `host_work_dir` a result reports is a path you can open — plots
+and exports written by `execute_code` land inside the directory you named.
+
+`load_data` reads a host file anywhere you can read, except credential
+locations such as `~/.ssh`; `load_from_work` reads what already lives in
+`/work`, which is why it is the right tool for `execute_code` output and the
+wrong tool for new host files.
 
 `list_workspaces` to find an earlier session's work, `describe_workspace` to see
 what is in it, `delete_workspace` with `dry_run: true` before removing anything.
 
 ## Where the file often comes from
 
-`splunk-mcp` writes any result above its inline threshold as JSONL under the
-workspace you gave it, with the exact row count. That path goes straight into
-`load_data` — Splunk retrieves, DuckDB analyses. Re-running narrower SPL to
-keep results inline is the wrong instinct; see
-[log-search.md](log-search.md).
+`splunk-mcp` returns rows in the response now, capped and counted — it writes
+no files. To analyse a large set here, write the rows into your `work_dir`
+yourself and `load_data` them, or ask Splunk for the slice you actually need.
+Splunk retrieves, DuckDB analyses; re-running narrower SPL just to shrink a
+response is still the wrong instinct. See [log-search.md](log-search.md).
 
 ## When not to use this server
 

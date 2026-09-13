@@ -147,7 +147,7 @@ Proxies — infrastructure, not tools you pick per task:
 | **A MAC address / BSSID** | `mac-lookup`. Read `vendor_lookup_applicable` **before** `vendor`: when false, the address is broadcast, multicast, or locally administered (a randomized MAC or virtual NIC) and no manufacturer exists to find — that is the answer, not a failed lookup |
 | **A CVE you need context on** | `gti-lookup` where configured: `search_threats` (`collection_type: vulnerability`) → `get_threat` on the `vulnerability--cve-...` id → `get_threat_mitre_tree` for the observed techniques and `get_threat_related` for the IOCs. Without the server, this row has no in-fleet answer — research it on the web |
 | **A pcap / pcapng** | `pcap-analyzer`: `create_workspace` → `protocol_hierarchy` → `list_conversations` → `query_packets` → `follow_stream` / `extract_objects`. Then send external IPs through the IP row, and hash extracted objects (`shasum -a 256`) for the file-hash row |
-| **A question about your own logs** | `splunk-mcp`: `list_indexes` → `list_sourcetypes` to learn the shape, then `run_query`. Nothing external observes it, so this is a tier 1 step — asking "have we seen this indicator ourselves?" belongs *before* the metered external ones, not after. Above the inline threshold the full result set lands as a JSONL file; hand that path to `data-toolbox` rather than re-running narrower searches |
+| **A question about your own logs** | `splunk-mcp`: `list_indexes` → `list_sourcetypes` to learn the shape, then `run_query`. Nothing external observes it, so this is a tier 1 step — asking "have we seen this indicator ourselves?" belongs *before* the metered external ones, not after. Rows come back in the response up to `max_rows` (default 50,000); past it the response says `truncated` with an exact `total_rows`, so page with `get_results` `offset`/`count` rather than re-running narrower searches |
 | **A question about your own data warehouse (BigQuery)** | `bigquery-mcp`: `list_tables` → `describe_table` (learn the partition column — filtering on it is what keeps a query inside the budget) → `query`. The server dry-runs every query and refuses one that is not a single SELECT, reads outside the allowlist, or would exceed the byte budget; a refusal is the server's verdict on the query, not a fault in your call or the runtime — read `code` and `details`, narrow the query, or report to the operator. Tier 1 like `splunk-mcp`: only your own project sees the job. Results stop at `max_rows` or the byte budget with `truncated: true` and `total_rows`; aggregate in SQL rather than paging everything |
 | **A question about the world** — documentation, a product, a price, a date, the news; anything your own data cannot answer | `brave-search`: `web_search` when you will read the sources yourself; `llm_context` when you want page text sized to your context (start with a small `max_tokens`); `answer` only when a one-paragraph sourced reply is what is wanted, since it costs about ten web searches; `research` last and with small caps — it runs several searches, bills every one of them, and cannot be stopped once dispatched. Read `meta` on every result for what it cost. Citations are unreliable for non-English replies: an empty `citations` never means "no sources exist", and a `note` on the result says when Brave returned none. Never feed a URL *under investigation* to `answer` / `research` — see the doctrine |
 | **A URL you already have and need to read** — documentation, a release page, an article the user pointed at, a search hit that must be read whole | `web-fetch`: `fetch` with the URL; when `truncated` is present, call again with `offset: next_offset` and concatenate; `format: raw` when the extraction missed the content. Prefer it to `llm_context` for a specific URL: `llm_context` answers with a *different* page, silently, when the URL is outside Brave's index. This is tier 4 — the site sees your IP — so for a URL **under investigation** it is the URL row (`urlscan-lookup`), never this |
@@ -203,10 +203,28 @@ voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-st
   `voice-scribe`, `gem-scribe`, `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
   `check_job`. A "processing" status is normal, not an error — and that
   applies to `urlscan-lookup` `get_result` too.
-- **Results come back as files, not bytes.** The media servers and the large
-  results of `asn-lookup` / `abuse-lookup` / `pcap-analyzer` / `splunk-mcp` /
-  `voice-scribe` are written into a workspace and returned as paths. Read the file; never expect
-  inline payloads — and never narrow a query just to force one back inline.
+- **Every server that writes a file takes `work_dir`, and it is required.**
+  Pass **the absolute path of a directory you can read back** — your session
+  or working directory. `image-forge`, `voice-studio`, `video-studio`,
+  `voice-scribe`, `gem-scribe`, `pcap-analyzer`, `data-toolbox`,
+  `chrome-pilot` and `slack-mcp-extender` all spell it `work_dir`, all
+  require it, and none of them has a default: a file written where you cannot
+  open it is a successful call and a useless one. The directory must already
+  exist, `~` is not expanded, and a relative path is refused.
+  - **Claude Code**: your session scratchpad directory.
+  - **Codex**: the session cwd, or a gitignored subdirectory of it.
+  - **gem-agent / lagent**: your session work directory — and these two
+    attach it to every call themselves, so you can leave the argument out.
+  - Pass the **same `work_dir`** to the servers in one media chain
+    (`image-forge` → `voice-studio` → `video-studio`): they share the
+    workspace on purpose.
+- **Data comes back in the response, not as a file.** `splunk-mcp` and
+  `pcap-analyzer` `query_packets` do not write result files any more: rows
+  are returned up to an explicit cap (`max_rows`, `limit`, a byte budget) and
+  whatever the cap drops is counted (`truncated`, `omitted_rows`) beside an
+  exact total. Never narrow a query just to force a result inline, and never
+  wait for a path that is not coming — page instead, or raise the cap if your
+  context can hold it.
 - **Your own browser is the loudest tool here.** `chrome-pilot` loads pages
   from this machine, on this network. Everything it fetches is a visit the
   site's operator can attribute to you — and a persistent profile carries

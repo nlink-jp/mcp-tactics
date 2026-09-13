@@ -43,18 +43,25 @@ The corollary is that a surprising count is a real finding about the data, not
 an artifact of the tool. Do not re-run with a narrower window to "check" a
 number that is already exact.
 
-## Large results are files, and they belong to data-toolbox
+## Large results come back capped and counted, not as a file
 
-Above the inline threshold (default 100 rows), **all** rows are written as
-JSONL under the `workspace_root` you pass, and the response carries the path,
-a short preview, and the exact count.
+Rows are returned in the response, up to `max_rows` (default 50,000; a call
+may set its own, and 0 means no cap). When the cap drops rows the response
+says so — `truncated`, `omitted_rows`, and a note — beside a `total_rows` that
+stays exact. **This server writes no result files**: it cannot know your
+context window, and putting a large response on disk is your runtime's job,
+not Splunk's.
 
-Hand that path to `data-toolbox` `load_data` — it reads JSONL directly. That
-is the intended division of labour: Splunk does retrieval, DuckDB does the
-analysis, and neither one is asked to do the other's job. Re-running a series
-of narrower SPL searches to keep results inline is the wrong instinct; it
-costs Splunk time and produces an answer you then have to stitch together by
-hand. See [data-analysis.md](data-analysis.md).
+So there are two honest moves for a set larger than one answer: raise
+`max_rows` if your context can hold it, or page with `get_results`
+`offset`/`count`. Re-running a series of narrower SPL searches to keep results
+small is still the wrong instinct — it costs Splunk time and produces an
+answer you then stitch together by hand.
+
+To analyse rather than retrieve, hand the rows to `data-toolbox`: write them
+into your `work_dir` yourself and `load_data` them, or query Splunk for the
+slice you actually need. Splunk does retrieval, DuckDB does the analysis. See
+[data-analysis.md](data-analysis.md).
 
 ## The SPL guard
 

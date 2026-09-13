@@ -4,10 +4,18 @@ Five media servers: three produce artifacts on local hardware, and two run the
 other way, turning recordings into text — `voice-scribe` locally and
 `gem-scribe` through Vertex AI. All of them are file-mediated — artifacts are
 paths under a workspace, never inline bytes; a short transcript is the one
-exception — and async for heavy work. Pass a `workspace_root` you can **read
-back** (your session or working directory when you have one): every result is a
-path under it, so a workspace you cannot open leaves you holding a path to
-nothing. Call each server's `get_usage` before first use.
+exception — and async for heavy work.
+
+**Every call names `work_dir`: the absolute path of a directory you can read
+back** (your session or working directory). It is required and there is no
+default — every result is a path under it, so a directory you cannot open
+leaves you holding a path to nothing. It must already exist, and `~` is not
+expanded. Under gem-agent and lagent the runtime attaches it for you. **Pass
+the same `work_dir` to every server in one chain**: the workspace is shared on
+purpose. A recording may also be named by an absolute path anywhere you can
+read (`voice-scribe` / `gem-scribe` read it in place, never copying it), with
+credential locations such as `~/.ssh` refused. Call each server's `get_usage`
+before first use.
 
 ## Division of labour
 

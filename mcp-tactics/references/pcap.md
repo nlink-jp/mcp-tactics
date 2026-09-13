@@ -45,10 +45,20 @@ the start — discovering the timeout after five minutes wastes the five minutes
 
 ## Output size
 
-Small results come back inline; large ones are written to JSONL/CSV in the
-workspace and returned as paths. Read the file. When a result is a path, the
-volume is the point — do not try to coerce it inline by narrowing until it fits
-if the wide answer is what the investigation needs.
+Rows come back in the response, bounded by `limit` and by a byte budget. **No
+result file is written any more**: what the bounds leave out is reported as
+`truncated` + `omitted_rows` with a note naming the bound, and `matched` stays
+exact — so a bounded answer is still an answer about the whole capture.
+
+Read `matched` before reacting. If it is far larger than `returned`, narrow the
+filter or ask for fewer fields; raise `limit` only if your context can hold the
+rest. `extract_objects` is the exception that still produces files, because
+there the file *is* the product — they land under your `work_dir`.
+
+Every call names `work_dir`: the absolute path of a directory you can read
+back. It is required, it has no default, and the capture itself may live
+anywhere you can read (it is mounted read-only, never copied) except credential
+locations such as `~/.ssh`.
 
 ## Untrusted by construction
 

@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **`work_dir` replaces `workspace_root` / `workspaceRoot` / `workspace_dir`
+  across the fleet, and it is required.** SKILL.md now states the rule once —
+  pass the absolute path of a directory you can read back — with the value to
+  use under each runtime (Claude Code's scratchpad, Codex's cwd, the session
+  work directory under gem-agent / lagent, which attach it themselves), and the
+  reminder that one media chain shares one `work_dir`.
+- **`splunk-mcp` and `pcap-analyzer` no longer write result files.** Rows come
+  back in the response under an explicit cap (`max_rows`, `limit`, a byte
+  budget) with what the cap dropped counted beside an exact total. log-search.md
+  and pcap.md now say to page or raise the cap rather than wait for a path, and
+  data-analysis.md no longer tells you to hand a Splunk JSONL file to
+  `load_data`.
+- `data-toolbox` workspaces live under the caller's `work_dir`, so the
+  `host_work_dir` in a result is a path the caller can open; `load_data` reads
+  any readable file except credential locations rather than an operator
+  allowlist.
+- `slack-mcp-extender`: `work_dir` **is** the containment boundary — an upload
+  comes from inside it, a download lands inside it — replacing the operator's
+  `allowed_roots`.
+- `chrome-pilot`: `take_screenshot` / `screencast_start` take the same required
+  `work_dir`; there is no server workspace to fall back to.
+
 ## [0.9.0] - 2026-09-12
 
 ### Added

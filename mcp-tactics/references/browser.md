@@ -80,9 +80,12 @@ itself is what you are investigating.
 - `emulate` sets the **whole** emulation state on each call: anything omitted
   is reset, so calling it bare clears everything. Set the full state you want,
   every time.
-- `take_screenshot` writes to the workspace and returns the image inline when
-  it is small enough.
-- `screencast_start` / `screencast_stop` produce an animated GIF. Frames exist
+- `take_screenshot` writes under the `work_dir` you name — required on every
+  file-producing call, the absolute path of a directory you can read back — and
+  returns the image inline when it is small enough.
+- `screencast_start` / `screencast_stop` produce an animated GIF under the same
+  `work_dir`, which `screencast_start` validates up front so a recording never
+  fails only at the end. Frames exist
   only where the page repaints — a static page produces none, and that is not
   a failure. The stop result distinguishes how long you recorded from how long
   the GIF runs.

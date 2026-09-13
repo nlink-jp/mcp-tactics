@@ -47,10 +47,13 @@ Its reason to exist is the three tools the official connector lacks:
 | `ext_file_upload_to_thread` | Upload a local file as a thread reply |
 | `ext_file_download` | Save a Slack file to local disk |
 
-Uploads and downloads run under the user's own identity, and paths are contained
-in both directions by operator configuration. A containment denial is the
-configuration working, not a bug to route around — a denied path means the
-operator put it out of bounds.
+Uploads and downloads run under the user's own identity, and all three tools
+require `work_dir`: the absolute path of a directory you can read back, which
+**is** the containment boundary here. An upload may only come from inside it
+and a download only lands inside it — nothing outside the directory you are
+working in can be sent to Slack, because that file leaves the machine. A
+containment denial is the boundary working, not a bug to route around: move or
+copy the file into your work directory first.
 
 Posting to Slack is an outward-facing action. Get explicit confirmation of the
 channel, the thread, and the file before uploading, and remember that a file
