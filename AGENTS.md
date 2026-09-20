@@ -2,7 +2,7 @@
 
 ## Project summary
 
-Claude Code Skill: cross-cutting selection layer for nlink-jp's 26 MCP servers
+Claude Code Skill: cross-cutting selection layer for nlink-jp's 27 MCP servers
 and 2 proxies (ADR-003, amended by ADR-018). Decision tables route an input
 artifact (IP, domain, URL, hash, MAC, pcap, log question, data file, …) to the
 right server in the right order, under a four-tier escalation doctrine ranked
@@ -18,7 +18,7 @@ Per-domain playbooks live under `mcp-tactics/references/`.
 | `make install` | Copy the skill to `~/.claude/skills/mcp-tactics` |
 | `make install DEST=<path>` | Copy to a custom skills directory |
 | `make uninstall` | Remove the installed copy |
-| `make check` (= `make test`) | Structural validation (frontmatter, relative links) |
+| `make check` (= `make test`) | Structural validation (frontmatter, relative links) + the fleet check (server count stated consistently, every server covered by a reference) |
 | `make package` | Build `dist/mcp-tactics-vX.Y.Z.zip` (zip root = skill folder) |
 | `make clean` | Remove `dist/` |
 
@@ -30,7 +30,8 @@ mcp-tactics/
 │   ├── SKILL.md           Router: decision tables, chains, escalation doctrine
 │   └── references/        Per-domain playbooks, read on demand
 ├── tests/
-│   └── validate-skill.sh
+│   ├── validate-skill.sh  Vendored org template — never edit here
+│   └── check-fleet.sh     Repo-specific: the server index is the single source of the count
 ├── Makefile
 ├── README.md / README.ja.md
 ├── CHANGELOG.md
@@ -53,7 +54,12 @@ mcp-tactics/
   investigation**, not only when investigation is its purpose — that is why a
   browser automation server sits in an OSINT tactics book (ADR-018).
 - The skill is Markdown — no build, no behaviour tests. Structure *is*
-  tested: `make check` verifies frontmatter and relative links.
+  tested: `make check` verifies frontmatter and relative links, and
+  `tests/check-fleet.sh` holds every statement of the server count (SKILL.md,
+  both READMEs, this file) and the references table to the server index in
+  SKILL.md. Adding a server means adding its index row; the check then names
+  everything else that has to follow. README.ja.md sat two servers behind
+  before this existed.
 - The `mcp-tactics/` subdirectory is the distribution boundary (ADR-004):
   `make package` zips exactly that directory, so the zip root is the skill
   folder — the layout claude.ai accepts. Never add repo-level files inside

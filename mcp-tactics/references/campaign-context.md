@@ -69,6 +69,8 @@ Pitfalls that will mislead you if unread:
   has seen it before, and as part of what*.
 - **File hash**: after `malware-lookup`. That server says what the file is;
   this says whose operation it belongs to.
+- **CVE**: after `cve-lookup`. That server says what the vulnerability is and
+  whether it is exploited at all; this says which reported operations use it.
 - **Out of a pulse**: the indicators from `get_pulse` are ordinary indicators —
   send them back through the IP, domain and hash rows of the decision table.
   This is the one server that *widens* an investigation rather than narrowing

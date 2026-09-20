@@ -21,6 +21,7 @@ uninstall:
 
 check:
 	@./tests/validate-skill.sh
+	@./tests/check-fleet.sh
 
 test: check
 

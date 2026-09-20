@@ -1,7 +1,7 @@
 # mcp-tactics
 
 A Claude Code Skill: the cross-cutting tactics book for
-[nlink-jp](https://github.com/nlink-jp)'s 26 MCP servers and 2 proxies
+[nlink-jp](https://github.com/nlink-jp)'s 27 MCP servers and 2 proxies
 ([ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md),
 amended by
 [ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)).
@@ -42,7 +42,7 @@ one of the organization's MCP servers, and `/mcp-tactics` shows it on demand.
 ## Development
 
 ```bash
-make check     # structural validation (frontmatter, relative links)
+make check     # structural validation (frontmatter, relative links) + the fleet check
 make package   # build dist/mcp-tactics-vX.Y.Z.zip (zip root = skill folder)
 ```
 
@@ -52,7 +52,10 @@ scaffolding (README, Makefile, tests) never enters the artifact.
 
 When a server is added, removed, or gains a tool, update the decision tables
 and the relevant playbook; when a tool's arguments change, do nothing —
-parameters belong to `get_usage` (ADR-003).
+parameters belong to `get_usage` (ADR-003). The server index in `SKILL.md` is
+the single source of the fleet: `make check` fails when the server count stated
+in `SKILL.md`, either README or `AGENTS.md` differs from it, or when a server
+in the index has no playbook in the references table.
 
 ## History
 

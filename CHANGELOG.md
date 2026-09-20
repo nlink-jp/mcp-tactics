@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] - 2026-09-20
+
+### Added
+
+- **`cve-lookup`, the 27th server** (tier 2; no key, no account). The "CVE you
+  need context on" row used to end in "without `gti-lookup` this row has no
+  in-fleet answer — research it on the web"; it now starts with `get_cve`
+  (CVSS, CISA KEV, EPSS, SSVC, exploit and patch signals) and keeps `gti-lookup`
+  for what only it has. Two new rows: **a product** (`match_product`, not
+  `search_cves` — and read `vendor_unverified`, because the index does not
+  filter by vendor) and **a vendor advisory** (`get_advisory` /
+  `search_advisories`, where `has_cve: false` lists what vendors disclosed
+  before a CVE ID existed).
+- `references/vuln-intel.md`: which tool for which question, the five shapes
+  that mean "the index has no data" and the one that means "not an answer", and
+  the per-IP quota shared by every process on the machine.
+- The anonymous-reads corollary names `cve-lookup` and what its queries can
+  still reveal (a product name, search words); the standing cautions cover its
+  quota and that CVE descriptions and advisory prose are third-party text.
+- `tests/check-fleet.sh`, run by `make check`: the server index in `SKILL.md`
+  is the single source of the fleet, and every statement of the server count
+  and the references table is held to it.
+
+### Fixed
+
+- `README.ja.md` still said 24 servers, two behind.
+- The references table did not list `bigquery-mcp` (covered by
+  `log-search.md`) or `gem-scribe` (covered by `media.md`).
+
 ## [0.10.1] - 2026-09-14
 
 ### Changed

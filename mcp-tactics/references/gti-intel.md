@@ -44,7 +44,10 @@ prefer the anonymous-read siblings first.
   and page with `offset` — never ask for everything.
 - **CVEs have a first-class home**: `search_threats` with
   `collection_type: vulnerability`, then `get_threat` /
-  `get_threat_mitre_tree` on the `vulnerability--cve-...` id.
+  `get_threat_mitre_tree` on the `vulnerability--cve-...` id. Ask
+  `cve-lookup` first all the same: CVSS, KEV, EPSS and patch state need no
+  licence and leave no entry in a licensed account's history. What only this
+  server has is the ATT&CK tree and the related IOCs.
 
 ## Pitfalls
 

@@ -1,6 +1,6 @@
 # mcp-tactics
 
-[nlink-jp](https://github.com/nlink-jp) の 24 MCP サーバと 2 プロキシを横断する
+[nlink-jp](https://github.com/nlink-jp) の 27 MCP サーバと 2 プロキシを横断する
 戦術書 Skill（[ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md)、
 [ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)
 で改訂）。`SKILL.md` は意思決定テーブルのルーター — 入力アーティファクト→ルート、
@@ -40,7 +40,7 @@ Claude が自律的に読み込み、`/mcp-tactics` で明示的に表示する�
 ## 開発
 
 ```bash
-make check     # 構造検証（frontmatter・相対リンク）
+make check     # 構造検証（frontmatter・相対リンク）＋ fleet 検査
 make package   # dist/mcp-tactics-vX.Y.Z.zip を生成（zip ルート = スキルフォルダ）
 ```
 
@@ -50,7 +50,10 @@ scaffolding（README・Makefile・tests）は配布物に含まれません。
 
 サーバの追加・削除・ツールの増減時は意思決定テーブルと該当プレイブックを
 更新します。ツールの引数が変わっただけなら何もしません — パラメータは
-`get_usage` の責務です（ADR-003）。
+`get_usage` の責務です（ADR-003）。fleet の正本は `SKILL.md` のサーバ索引です。
+`SKILL.md`・両 README・`AGENTS.md` に書かれたサーバ数が索引と食い違うとき、
+または索引のサーバに対応するプレイブックが references 表に無いとき、
+`make check` は失敗します。
 
 ## 履歴
 
