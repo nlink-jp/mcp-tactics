@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.11.1] - 2026-09-22
+
+### Changed
+
+- `references/browser.md`: `upload_file` now takes the same required
+  `work_dir` as the file-producing tools and hands the page only a file under
+  it, and a screencast `filePath` must lie under `work_dir` (chrome-pilot-mcp
+  0.8.0). The reference says to copy the file into `work_dir` first and what a
+  `path_not_allowed` refusal means.
+
 ## [0.11.0] - 2026-09-20
 
 ### Added
