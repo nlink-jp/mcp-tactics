@@ -85,10 +85,16 @@ itself is what you are investigating.
   returns the image inline when it is small enough.
 - `screencast_start` / `screencast_stop` produce an animated GIF under the same
   `work_dir`, which `screencast_start` validates up front so a recording never
-  fails only at the end. Frames exist
+  fails only at the end. A `filePath` for the GIF must lie under `work_dir`
+  too — relative to it, or absolute inside it. Frames exist
   only where the page repaints — a static page produces none, and that is not
   a failure. The stop result distinguishes how long you recorded from how long
   the GIF runs.
+- `upload_file` takes the same required `work_dir` and hands the page only a
+  file under it: a page can send what it is given anywhere. **Copy the file
+  into `work_dir` first.** A path outside it, a symlink leading out, or a
+  credential file (`~/.ssh`, `.env`) comes back as `path_not_allowed`, with
+  `details.reason` saying which — not something a retry fixes.
 - `drag` is mouse-event based. HTML5 `dragstart`/`drop` UIs are not simulated;
   if a drag does nothing, that is why.
 
