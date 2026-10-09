@@ -45,6 +45,11 @@ covers selection, ordering, and pitfalls only.
    walk `page` while `has_next_page` holds. Every page is a metered request:
    fetch what you need once rather than re-asking for what you already read.
 
+6. **`shodan-lookup`**, where configured — what the address exposes: open
+   ports, products, certificates, inferred CVEs. Free per lookup but keyed,
+   so it sits beside `abuse-lookup` at the end. See
+   [exposure-intel.md](exposure-intel.md).
+
 Skipping straight to step 5 is the common mistake: the score is meaningless
 without knowing whether step 2 already explained the address.
 

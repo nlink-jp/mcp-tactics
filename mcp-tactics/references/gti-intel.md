@@ -12,9 +12,9 @@ target under investigation** — tier 2.
 
 ## The server may simply not be there
 
-`gti-lookup` is the one member of the lookup family that requires a paid
-licence, so **an environment without one will not have this server
-configured at all**. Its absence is expected, not a fault: use it when it
+`gti-lookup` requires a paid commercial licence — one of two lookup servers
+that need a paid key, with `shodan-lookup` — so **an environment without one
+will not have this server configured at all**. Its absence is expected, not a fault: use it when it
 appears in your tool list, plan without it when it does not, and never treat
 a missing `gti-lookup` as a broken setup. The free-source siblings
 (`malware-lookup`, `otx-lookup`, `urlscan-lookup`, ...) answer their rows of

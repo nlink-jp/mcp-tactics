@@ -73,8 +73,8 @@ Pitfalls that will mislead you if unread:
   whether it is exploited at all; this says which reported operations use it.
 - **Out of a pulse**: the indicators from `get_pulse` are ordinary indicators —
   send them back through the IP, domain and hash rows of the decision table.
-  This is the one server that *widens* an investigation rather than narrowing
-  it, so decide how far you mean to follow it before you start.
+  Like a `shodan-lookup` pivot, this *widens* an investigation rather than
+  narrowing it, so decide how far you mean to follow it before you start.
 
 ## Setup and quota
 
