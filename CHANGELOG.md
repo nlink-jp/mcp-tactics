@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.12.0] - 2026-10-09
+
+### Added
+
+- **`shodan-lookup`, the 28th server** (tier 2; Shodan key, Membership or
+  above). It answers what an IP exposes to the Internet — open ports,
+  products, TLS certificates, inferred CVEs and when each was seen — without
+  sending anything to the target, but every address and search word is
+  recorded against the operator's Shodan account. It joins `abuse-lookup` at
+  the end of the IP row, and a new decision row covers **pivoting from one
+  host to others** (`count_services`, which is free, before
+  `search_services`, which spends a query credit and is refused below the
+  operator's floor). New playbook: `references/exposure-intel.md`.
+
+### Changed
+
+- `gti-lookup` is no longer described as the only server that needs a paid
+  key, and `otx-lookup` no longer as the only one that widens an
+  investigation.
+- The description gains Shodan and 公開ポート and drops the hash algorithm
+  names, to stay under the 1,024-character limit (1,020).
+
 ## [0.11.1] - 2026-09-22
 
 ### Changed
