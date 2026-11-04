@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.13.0] - 2026-11-04
+
+### Removed
+
+- **The production servers — `voice-studio`, `video-studio` and
+  `image-forge`** (organization ADR-027). The skill now covers a server only
+  when choosing it, or the order of its calls, changes who can observe an
+  investigation or where its material goes; these three only produce an
+  artifact on the machine and have no place on that axis. Their index rows,
+  the decision rows for voicing a script, combining slides with narration and
+  generating an image, the narrated-deliverable chain, and their triggers in
+  the description are gone. `report-studio-mcp` is not added for the same
+  reason (#1, #2). 28 → 25 servers.
+
+### Changed
+
+- `references/media.md` is now **`references/transcription.md`** and covers
+  only `voice-scribe` and `gem-scribe`, whose choice decides whether a
+  recording leaves the machine.
+- SKILL.md, both READMEs and AGENTS.md state the inclusion criterion, so the
+  count is not read as every MCP server nlink-jp ships.
+
 ## [0.12.0] - 2026-10-09
 
 ### Added
