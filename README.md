@@ -1,10 +1,17 @@
 # mcp-tactics
 
 A Claude Code Skill: the cross-cutting tactics book for
-[nlink-jp](https://github.com/nlink-jp)'s 28 MCP servers and 2 proxies
+[nlink-jp](https://github.com/nlink-jp)'s 25 MCP servers and 2 proxies
 ([ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md),
 amended by
-[ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)).
+[ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)
+and
+[ADR-027](https://github.com/nlink-jp/.github/blob/main/adr/027-mcp-tactics-scope-and-bundled-skills.md)).
+The count is not "every MCP server nlink-jp ships": a server is covered when
+choosing it, or the order of its calls, changes who can observe an
+investigation or where its material goes. Servers that only produce an
+artifact on the machine — narration, video, image generation, report
+typesetting — are outside it and document themselves.
 `SKILL.md` is a router of decision tables — input artifact → route,
 cross-server chains, and a four-tier escalation doctrine ranked by who can see
 that you asked, from no external observer up to contact from your own IP —

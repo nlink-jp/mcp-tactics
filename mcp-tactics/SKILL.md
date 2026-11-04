@@ -1,11 +1,15 @@
 ---
 name: mcp-tactics
-description: Pick the right nlink-jp MCP server and call them in order. Use when investigating an IP address or its open ports (Shodan), domain, URL, file hash, MAC/BSSID, CVE, or a pcap capture; when asking what Google Threat Intelligence knows about an indicator or how a sample behaves in a sandbox; when searching the web, reading a web page by URL or wanting a sourced answer; when searching your own Splunk logs; when querying or exploring your own BigQuery data warehouse (any dataset); when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python; when driving a real browser; when producing narrated Japanese audio, a video or a local image; when transcribing a recording locally; or for a second opinion from another model. Also for 調査・トリアージ・不審IP・公開ポート・不審URL・不審メール・ハッシュ照合・マルウェア判定・脆弱性情報・サンドボックス挙動・パケット解析・Web検索・ページ取得・調べ物・ログ検索・BigQuery・DWH・テーブル探索・SQL集計・データ分析・ブラウザ自動操作・ナレーション音声・解説動画・画像生成・文字起こし・セカンドオピニオン. Read this before using any in-house MCP server, especially one that could touch the party under investigation.
+description: Pick the right nlink-jp MCP server and call them in order. Use when investigating an IP address or its open ports (Shodan), domain, URL, file hash, MAC/BSSID, CVE, or a pcap capture; when asking what Google Threat Intelligence knows about an indicator or how a sample behaves in a sandbox; when searching the web, reading a web page by URL or wanting a sourced answer; when searching your own Splunk logs; when querying or exploring your own BigQuery data warehouse (any dataset); when analysing a CSV/JSON/JSONL/Parquet file or writing throwaway Python; when driving a real browser; when transcribing a recording locally; or for a second opinion from another model. Also for 調査・トリアージ・不審IP・公開ポート・不審URL・不審メール・ハッシュ照合・マルウェア判定・脆弱性情報・サンドボックス挙動・パケット解析・Web検索・ページ取得・調べ物・ログ検索・BigQuery・DWH・テーブル探索・SQL集計・データ分析・ブラウザ自動操作・文字起こし・セカンドオピニオン. Read this before using any in-house MCP server, especially one that could touch the party under investigation.
 ---
 
 # MCP Tactics — nlink-jp MCP servers
 
-28 MCP servers and 2 proxies, organized by *when to reach for them*. Two of
+25 MCP servers and 2 proxies, organized by *when to reach for them*. They
+are the servers whose choice, or the order of whose calls, changes who can
+observe an investigation or where its material goes. Servers that only
+produce an artifact on this machine — narration, video, image generation,
+report typesetting — are deliberately not here; each documents itself. Two of
 them exist only where a paid key does — `gti-lookup` (a commercial GTI
 licence) and `shodan-lookup` (a Shodan membership): their absence from your
 tool list is expected where no such key is configured, and every route below
@@ -122,17 +126,14 @@ Investigation layer:
 | `splunk-mcp` | What your own Splunk already recorded | 1 | Splunk token; one server instance per Splunk host | `list_indexes` → `run_query` |
 | `bigquery-mcp` | What your own BigQuery data warehouse holds — Workspace audit exports, security logs, business data. Every query is dry-run first and refused unless it is a single SELECT inside the dataset allowlist and the byte budget | 1 | Application Default Credentials + IAM (`jobUser`, `dataViewer`); one server instance per billing project | `list_tables` → `describe_table` → `query` |
 
-Production and analysis layer:
+Analysis layer:
 
 | Server | Produces | Needs | Entry tool → |
 |---|---|---|---|
 | `data-toolbox` | DuckDB queries + sandboxed Python over local files | Podman | `describe_runtime` → `load_data` → `query_data` |
 | `chrome-pilot` | Drives the Chrome on this machine over CDP — pages, input, a11y snapshots, console, network, screencast | Google Chrome installed; **tier 4, see the doctrine** | `new_page` → `take_snapshot` |
-| `voice-studio` | Multi-speaker **Japanese** narrated audio | AivisSpeech Engine running locally | `list_speakers` → `synthesize_script` → `master` |
 | `voice-scribe` | A transcript from an audio / video recording — local whisper.cpp, no audio leaves the machine | macOS arm64 + Metal; model weights downloaded | `list_models` → `transcribe` → `check_job` |
 | `gem-scribe` | A transcript from a recording — Vertex AI's dedicated transcription model, up to 8 speakers, optional translation and speaker names | Vertex AI config; **audio leaves the machine and is metered** | `get_usage` → `transcribe` → `check_job` |
-| `video-studio` | MP4 from per-page image + audio pairs | ffmpeg; audio from upstream | `master` |
-| `image-forge` | Locally generated images (diffusion) | macOS arm64 + Metal, 16 GB RAM min, model weights downloaded | `list_models` → `generate` / `upscale` → `check_job` |
 | `brave-search` | What the web says: ranked results with snippets (`web_search`), page text pre-extracted to a token budget for grounding (`llm_context`), a Brave-grounded answer with citations from one search (`answer`) or from several iterations of searches (`research`) | Brave API keys, one per plan (Search / Answers); **every call is billed** — a web search costs a fraction of a cent, an answer about ten times that, research a multiple of an answer; nothing is cached | `get_usage` → `web_search` / `llm_context` → *(deliberate)* `answer` → *(last)* `research` |
 | `web-fetch` | The text of one URL you already have — the page's main content as markdown (or plain text, or the raw body), paged by `offset`, with a `doc_id` that says whether a page turn is still the same page | Nothing — no key, no cache on disk; **tier 4, see the doctrine** | `get_usage` → `fetch` |
 | `ask-gemini` | A second opinion from Vertex AI Gemini | Vertex AI config | `ask_gemini` |
@@ -166,10 +167,7 @@ Proxies — infrastructure, not tools you pick per task:
 | **A URL you already have and need to read** — documentation, a release page, an article the user pointed at, a search hit that must be read whole | `web-fetch`: `fetch` with the URL; when `truncated` is present, call again with `offset: next_offset` and concatenate; `format: raw` when the extraction missed the content. Prefer it to `llm_context` for a specific URL: `llm_context` answers with a *different* page, silently, when the URL is outside Brave's index. This is tier 4 — the site sees your IP — so for a URL **under investigation** it is the URL row (`urlscan-lookup`), never this |
 | **A CSV / JSON / JSONL / Parquet** | `data-toolbox`: `load_data` → `query_data`. Reach for `execute_code` only when SQL genuinely cannot express it |
 | **A live page you must actually drive** (a form, a login, a UI you are developing) | `chrome-pilot`: `new_page` → `take_snapshot` → act on the `uid`s it returns. This is your Chrome on your network. To merely *read* a page, `web-fetch` does it without a browser. For a URL **under investigation**, use the URL row instead — the browser is tier 4 |
-| **A manuscript or script to voice** | `voice-studio` (Japanese only). For a fuller workflow, the `multi-actor-narration` skill already drives it |
-| **Slides + narration to combine** | `voice-studio` per page → `video-studio` `master`. Page duration comes from its audio, so A/V sync is automatic |
 | **A recording to transcribe** (a meeting, an interview, a video's audio track) | Two servers, and **neither is the default**. `voice-scribe`: `list_models` → `transcribe` → `check_job` — fully local, no audio leaves the machine, nothing is metered, up to 4 speakers. `gem-scribe`: `get_usage` → `transcribe` → `check_job` — more accurate and faster, up to 8 speakers, but the audio goes to Vertex AI and is metered (~$0.30/hour). **Investigation material stays local: use `voice-scribe`.** Otherwise choose by what the task needs — cost favours `voice-scribe`, and accuracy, a large cast, a translation or real speaker names favour `gem-scribe`. Both share one output envelope, so downstream consumers (the `meeting-notes` skill included) read either with one parser. `gem-scribe` results carry a `warning` field when the transcript is well-formed but probably wrong (speakers collapsed into one, an experimental speaker count) — read it |
-| **A prompt for an image** | `image-forge` locally, or the `gem-image` CLI for cloud Gemini |
 | **A design or debugging question you are stuck on** | `ask-llm` (local, nothing leaves the machine) before `ask-gemini` (stronger, but the prompt goes to Vertex AI) |
 
 ## Chains worth knowing
@@ -196,13 +194,6 @@ pcap ─▶ pcap-analyzer (conversations, streams, extracted objects)
           └─▶ extracted objects ─▶ shasum -a 256 ─▶ malware-lookup check_hash
 ```
 
-**Narrated deliverable** — three servers, one pipeline:
-
-```
-page images (image-forge / your own rendering) ─┐
-voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-studio (master) ─▶ mp4
-```
-
 ## Standing cautions
 
 - **Quota is real.** `abuse-lookup` gets 1000 checks/day and `urlscan-lookup`'s
@@ -221,15 +212,15 @@ voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-st
   forbids it): an identical call is a second charge. Its results are Brave's
   and their sources' — cite the URLs, do not store or redistribute them, and
   never use them to train or evaluate a model.
-- **Long jobs are async.** `pcap-analyzer`, `image-forge`, `voice-studio`,
-  `voice-scribe`, `gem-scribe`, `video-studio`, and `splunk-mcp` return a job handle for heavy work; poll
+- **Long jobs are async.** `pcap-analyzer`, `voice-scribe`, `gem-scribe`, and
+  `splunk-mcp` return a job handle for heavy work; poll
   `check_job`. A "processing" status is normal, not an error — and that
   applies to `urlscan-lookup` `get_result` too.
 - **Every server that writes a file takes `work_dir`, and it is required.**
   Pass **the absolute path of a directory you can read back** — your session
-  or working directory. `image-forge`, `voice-studio`, `video-studio`,
-  `voice-scribe`, `gem-scribe`, `pcap-analyzer`, `data-toolbox`,
-  `chrome-pilot` and `slack-mcp-extender` all spell it `work_dir`, all
+  or working directory. `voice-scribe`, `gem-scribe`, `pcap-analyzer`,
+  `data-toolbox`, `chrome-pilot` and `slack-mcp-extender` all spell it
+  `work_dir`, all
   require it, and none of them has a default: a file written where you cannot
   open it is a successful call and a useless one. The directory must already
   exist, `~` is not expanded, and a relative path is refused.
@@ -237,9 +228,6 @@ voice-studio (synthesize_script ─▶ master) ─────┴─▶ video-st
   - **Codex**: the session cwd, or a gitignored subdirectory of it.
   - **gem-agent / lagent**: your session work directory — and these two
     attach it to every call themselves, so you can leave the argument out.
-  - Pass the **same `work_dir`** to the servers in one media chain
-    (`image-forge` → `voice-studio` → `video-studio`): they share the
-    workspace on purpose.
 - **Data comes back in the response, not as a file.** `splunk-mcp` and
   `pcap-analyzer` `query_packets` do not write result files any more: rows
   are returned up to an explicit cap (`max_rows`, `limit`, a byte budget) and
@@ -288,7 +276,7 @@ three servers without one, to their `tools/list` descriptions.
 | [references/log-search.md](references/log-search.md) | `splunk-mcp`, `bigquery-mcp` |
 | [references/data-analysis.md](references/data-analysis.md) | `data-toolbox` |
 | [references/browser.md](references/browser.md) | `chrome-pilot` |
-| [references/media.md](references/media.md) | `voice-studio`, `video-studio`, `image-forge`, `voice-scribe`, `gem-scribe` |
+| [references/transcription.md](references/transcription.md) | `voice-scribe`, `gem-scribe` |
 | [references/web-search.md](references/web-search.md) | `brave-search` |
 | [references/web-fetch.md](references/web-fetch.md) | `web-fetch` |
 | [references/llm-and-proxies.md](references/llm-and-proxies.md) | `ask-gemini`, `ask-llm`, `slack-mcp-extender`, `mcp-bridge` |

@@ -2,8 +2,8 @@
 
 ## Project summary
 
-Claude Code Skill: cross-cutting selection layer for nlink-jp's 28 MCP servers
-and 2 proxies (ADR-003, amended by ADR-018). Decision tables route an input
+Claude Code Skill: cross-cutting selection layer for nlink-jp's 25 MCP servers
+and 2 proxies (ADR-003, amended by ADR-018 and ADR-027). Decision tables route an input
 artifact (IP, domain, URL, hash, MAC, pcap, log question, data file, …) to the
 right server in the right order, under a four-tier escalation doctrine ranked
 by who can observe the query: no external observer → third party → target
@@ -50,9 +50,14 @@ mcp-tactics/
   compatibility respectively). The Skill names them so the absence reads as
   expected; if a fourth appears, add it to that list rather than restating
   its parameters here (ADR-018).
-- **A new MCP server is in scope when it *can* contact a party under
-  investigation**, not only when investigation is its purpose — that is why a
-  browser automation server sits in an OSINT tactics book (ADR-018).
+- **A new MCP server is in scope when choosing it, or the order of its calls,
+  changes who can observe an investigation or where its material goes**
+  (ADR-027) — not when it is merely an MCP server. That is why a browser
+  automation server is here (it contacts the target from our own IP) and the
+  transcription servers are (a recording may or may not leave the machine),
+  while servers that only produce an artifact on the machine — narration,
+  video, image generation, report typesetting — are not. Before adding a
+  server, say where it sits on that axis; if there is no answer, it stays out.
 - The skill is Markdown — no build, no behaviour tests. Structure *is*
   tested: `make check` verifies frontmatter and relative links, and
   `tests/check-fleet.sh` holds every statement of the server count (SKILL.md,
