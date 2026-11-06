@@ -24,8 +24,8 @@ the decision table with no licence.
 
 Every query is recorded against the licence holder's commercial account.
 There is no anonymous mode and no per-call opt-out — this is the far end of
-tier 2's attribution axis (contrast `otx-lookup`, where `anonymous: true`
-declines to identify you). When the fact that you asked is itself sensitive,
+tier 2's attribution axis, shared with `opencti-lookup` (contrast
+`otx-lookup`, where `anonymous: true` declines to identify you). When the fact that you asked is itself sensitive,
 prefer the anonymous-read siblings first.
 
 ## Ordering
@@ -46,8 +46,8 @@ prefer the anonymous-read siblings first.
   `collection_type: vulnerability`, then `get_threat` /
   `get_threat_mitre_tree` on the `vulnerability--cve-...` id. Ask
   `cve-lookup` first all the same: CVSS, KEV, EPSS and patch state need no
-  licence and leave no entry in a licensed account's history. What only this
-  server has is the ATT&CK tree and the related IOCs.
+  licence and leave no entry in a licensed account's history. What this server
+  adds is the ATT&CK tree and the related IOCs.
 
 ## Pitfalls
 

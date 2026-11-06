@@ -37,8 +37,9 @@ nginx?" is `match_product`; zero hits from `search_cves` is evidence of nothing.
    `section` (`cpe`, `references`, …) only for the part you need.
 2. **Widen, if the triage needs it**: `get_related` for the neighbours,
    `get_exposure` for the footprint, `otx-lookup` `lookup_indicator` (it takes a
-   CVE) for who is using it, and `gti-lookup` where configured for ATT&CK trees
-   and related IOCs.
+   CVE) for who is using it, `opencti-lookup` where configured for who exploits
+   or targets it in that instance, and `gti-lookup` where configured for ATT&CK
+   trees and related IOCs.
 3. **From a product instead of a CVE**: `match_product` → `get_cve` on the rows
    that matter → section `cpe` to compare version ranges yourself. No version
    is ever sent upstream: a product plus a version is a fingerprint of what you

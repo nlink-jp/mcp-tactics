@@ -3,12 +3,17 @@
 One server: `otx-lookup`. Call its `get_usage` before first use; this file
 covers selection, ordering, and pitfalls only.
 
-Every other investigation server answers "one indicator, one attribute" —
+Most investigation servers answer "one indicator, one attribute" —
 attribution, registration, reputation, DNS relationships, what a hash is, how a
 URL behaves. This one answers a different question: **has anyone reported this
 indicator as part of a campaign, and if so, whose?** It reads the community
 reports ("pulses") of the LevelBlue Open Threat Exchange, so only a third-party
-index is touched — tier 2, and safe early in a triage.
+index is touched — tier 2, and safe early in a triage. Two keyed servers ask
+the same question of other sources where they are configured:
+`opencti-lookup` of the OpenCTI instance you hold a key to
+([opencti-intel.md](opencti-intel.md)), and `gti-lookup` of Google's index
+([gti-intel.md](gti-intel.md)). OTX is the one of the three that answers with
+no key.
 
 It duplicates no sibling **by design**: the sections OTX carries that
 `abuse-lookup`, `rdns-lookup`, `malware-lookup` and `urlscan-lookup` each own
@@ -30,7 +35,8 @@ second opinion, and prefer the sibling's answer when the two disagree.
    thousands is a feed dump, and you almost certainly want to judge the pulse
    before pulling all of it.
 3. **`search_pulses`** — only when you have a campaign *name* rather than an
-   indicator. Requires an API key.
+   indicator. Requires an API key. Where `opencti-lookup` is configured, its
+   `search_threats` finds actors, malware and techniques by name as well.
 
 ## Reading the result honestly
 
