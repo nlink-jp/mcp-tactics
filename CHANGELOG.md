@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.14.0] - 2026-11-07
+
+### Added
+
+- **`opencti-lookup`, the 26th server** (tier 2; a key issued by the
+  provider of an OpenCTI instance). It reads one instance read-only — IOCs
+  through observables and indicators with sightings and decay, threat actors,
+  malware and ATT&CK techniques by name, alias or technique id, their
+  relationships, reports and attachments — and contacts nothing but that
+  instance. Every query is recorded against the issued key and visible to the
+  provider, with no anonymous mode, so it sits with `gti-lookup` at the far end
+  of tier 2's attribution axis; the endpoints of the ladder are unchanged
+  (#3). It comes after the anonymous reads and beside `otx-lookup` as
+  campaign context in the IP, domain, hash and URL rows (the URL row also
+  takes a suspicious mail's sender), adds who exploits a CVE to the CVE row,
+  and a new decision row covers **a threat actor, malware family or ATT&CK
+  technique by name**. New playbook: `references/opencti-intel.md`, which
+  also says that an item's TLP marking decides where a writeup may carry it.
+
+### Changed
+
+- Three servers, not two, are described as existing only where a key is
+  configured; `otx-lookup` is no longer described as the only server that
+  answers whether an indicator belongs to a known operation, nor
+  `gti-lookup` as the only one with related IOCs for a CVE.
+- The name-search route no longer offers `gti-lookup`: the Standard licence
+  this fleet runs cannot search actors by name, and its names arrive through
+  `lookup_ioc` associations.
+- The description gains OpenCTI, actors, ATT&CK techniques, IOC照会 and
+  攻撃グループ (1,023 characters).
+
 ## [0.13.0] - 2026-11-04
 
 ### Removed
