@@ -19,7 +19,7 @@ early in a triage.
    AV/EDR log into one call instead of looping.
 2. **`get_sample_info`** — only when the compact evidence is not enough and
    you need the Hybrid Analysis overview (every name the file was submitted
-   under, size, type, all scanner results, its sandbox reports). Needs the
+   under, size, type, all scanner results, the IDs of its sandbox reports). Needs the
    Hybrid Analysis key. The record comes back inline in `record`, several KB —
    one hash at a time, so do not loop it over a sweep.
 
@@ -34,9 +34,9 @@ early in a triage.
 
 Pitfalls that will mislead you if unread:
 
-- **`conflicting` is common on purpose.** EICAR comes back conflicting (it
-  ships inside AV test suites). A conflicting verdict is a finding, not a tool
-  malfunction.
+- **`conflicting` is common on purpose.** With the key, EICAR comes back
+  conflicting (it ships inside AV test suites); keyless it reads `known_good`.
+  A conflicting verdict is a finding, not a tool malfunction.
 - **CIRCL trust 50 is exactly neutral** — a file in a single dataset carries
   trust 50 and, on CIRCL alone, stays `unknown`. Presence in NSRL alone is not
   legitimacy.
