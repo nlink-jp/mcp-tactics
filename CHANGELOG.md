@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.17.0] - 2026-11-07
+
+### Added
+
+- **`cert-lookup`, the 28th server** (tier 2; an organization key for
+  SSLMate, and Validin's for history). It answers which certificates the
+  public Certificate Transparency logs recorded for a domain — issuer,
+  validity, revocation, the other names on each, the CAA values that would
+  authorize the CA — and, on request, a sample of past issuances. Only the
+  domain names leave the machine and nothing reaches the domain itself, but
+  every query is sent under the organization's keys, so it joins the keyed
+  side of tier 2's attribution axis; the ladder's endpoints are unchanged. It
+  is for the organization's own work only (Validin's terms).
+- In the domain row it is the keyed read after the anonymous ones: the first
+  issuance dates when the domain went live, the names outside the domain are
+  leads back into the row, and the CAA values are compared with
+  `doh-lookup`'s records. Enumerating names stays `rdns-lookup`'s job first,
+  and history is for when *when* matters, at one of Validin's 10 daily
+  queries per domain. The quota and untrusted-content cautions name it.
+- `references/cert-intel.md`: attribution and terms, which sibling answers
+  which question (a certificate's SHA-256 is compared in `shodan-lookup`'s
+  host answer, not searched — Shodan's fingerprint filter is SHA-1), ordering,
+  and how to read an empty answer, the history sample, a missing latest date,
+  an unknown revocation, an issuance before registration and a CAA mismatch.
+  `references/network-intel.md`'s domain ordering points to it.
+
+### Changed
+
+- The attribution corollary's sentence about Shodan's crawlers names
+  `shodan-lookup` instead of "it", which the new clause had moved four
+  clauses away.
+
 ## [0.16.0] - 2026-11-07
 
 ### Added
