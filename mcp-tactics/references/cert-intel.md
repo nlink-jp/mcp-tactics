@@ -32,9 +32,9 @@ itself — not even a DNS query. Tier 2, on the keyed side.
 | When were certificates issued in the past? | `cert-lookup` with history — a sample, and metered |
 | Which other domains share this domain's certificates? | `cert-lookup` — the names outside the domain on its certificates |
 | Was the issuing CA authorized by the domain's CAA records? | `cert-lookup` (the CAA values that authorize the CA) against `doh-lookup` (the domain's CAA records) |
-| Every name under this domain | `rdns-lookup` `lookup_subdomains` first — anonymous, free, and its index already holds CT names. `cert-lookup`'s subtree query is for the certificates under it, at 10 an hour |
+| Every name under this domain | `rdns-lookup` `lookup_subdomains` first — anonymous and free. `cert-lookup`'s subtree query is for the certificates under it, at 10 an hour |
 | When was the domain registered? | `whois-lookup` |
-| Which IPs actually present the certificate? | `shodan-lookup`, where configured — ask by name: `cert-lookup` returns SHA-256 hashes, and Shodan's certificate fingerprint filter matches SHA-1 only |
+| Which IPs actually present the certificate? | `shodan-lookup`, where configured. It takes addresses, not names: resolve the name with `doh-lookup`, `lookup_host` each address, and compare the certificate SHA-256 in its answer with `cert-lookup`'s. The hash cannot be searched — Shodan's fingerprint filter matches SHA-1 only — and a search by the name through `count_services` sends the name to the Shodan account as well |
 
 ## Ordering
 
@@ -43,12 +43,19 @@ itself — not even a DNS query. Tier 2, on the keyed side.
    `rdns-lookup` for the surrounding names. See
    [network-intel.md](network-intel.md).
 2. **`lookup_certs` without history** — the current certificates and their
-   revocation. Up to 20 domains a call; answers cache for hours, so asking
-   again costs nothing.
-3. **Read issuance against registration.** A domain registered days ago that
-   got a certificate at once is the pattern; neither date alone is. For an old
-   domain, SSLMate's earliest issuance is only the earliest *unexpired* one,
-   never the first.
+   revocation. Up to 20 domains a call. A full answer caches for hours, so
+   asking again costs nothing; an empty one caches for minutes, and a failed
+   or cut-short one not at all, so repeating exactly those spends queries
+   again.
+3. **Read issuance against registration.** The first issuance dates when
+   the domain went live. Nearly every new domain, benign or not, gets a
+   certificate within hours of registration, so a prompt certificate confirms
+   the registration age `whois-lookup` gave rather than adding a second
+   signal. SSLMate's earliest issuance is the earliest *unexpired* one, which
+   for an old domain is rarely the first. An issuance **before** the
+   registration date means a previous registrant — the domain was dropped and
+   caught again — and that certificate may still be valid in someone else's
+   hands.
 4. **History only when *when* matters** and the current answer does not say.
    Every domain not in the cache spends one of Validin's 10 queries a day.
    `cache_status` shows what remains; the server checks it too and refuses a
