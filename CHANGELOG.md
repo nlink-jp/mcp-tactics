@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.15.0] - 2026-11-07
+
+### Changed
+
+- **`malware-lookup` follows its v0.4.0 sources: CIRCL hashlookup and Hybrid
+  Analysis.** Team Cymru MHR and MalwareBazaar were dropped there because their
+  free tiers are limited to non-commercial use. `references/hash-intel.md` is
+  rewritten for the new evidence: only Hybrid Analysis `malicious` is malware,
+  `whitelisted` is a second known-good source, and anything weaker reads
+  `unknown` with the upstream verdict shown; `unknown` is often just "never
+  uploaded"; without the free key there is no malicious signal at all and
+  EICAR reads `known_good`; file names and the family hint are third-party
+  text; nothing is ever submitted.
+- **Tier 2's attribution axis now includes `malware-lookup`.** Its Hybrid
+  Analysis side is keyed, so every hash looked up lands in the operator's
+  account history. For a unique sample from a targeted intrusion, ask
+  `otx-lookup` with `anonymous: true` first, or use it keyless. The ladder's
+  endpoints are unchanged.
+- The server index row, the file-hash decision row and `gti-intel.md` (which
+  still said "three free sources") are updated to match.
+
 ## [0.14.0] - 2026-11-07
 
 ### Added
