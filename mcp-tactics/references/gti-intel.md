@@ -31,7 +31,7 @@ prefer the anonymous-read siblings first.
 ## Ordering
 
 - **After the free siblings, not instead of them.** `malware-lookup` still
-  answers "what is this hash" from three free sources; `gti-lookup`
+  answers "what is this hash" from CIRCL and Hybrid Analysis's verdict; `gti-lookup`
   `lookup_ioc` adds whose collections it appears in, and `get_file_behaviour`
   what it did in a sandbox — questions no free sibling answers.
 - **`lookup_ioc` is deliberately trimmed** to the association context; the
