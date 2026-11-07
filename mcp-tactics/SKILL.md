@@ -5,7 +5,7 @@ description: Pick the right nlink-jp MCP server and call them in order. Use when
 
 # MCP Tactics — nlink-jp MCP servers
 
-27 MCP servers and 2 proxies, organized by *when to reach for them*. They
+28 MCP servers and 2 proxies, organized by *when to reach for them*. They
 are the servers whose choice, or the order of whose calls, changes who can
 observe an investigation or where its material goes. Servers that only
 produce an artifact on this machine — narration, video, image generation,
@@ -46,7 +46,7 @@ tier 4 only when you can justify it in the writeup.
 | Tier | Who observes | Servers |
 |---|---|---|
 | **1 — no external observer** | Nobody outside this machine or your own infrastructure | `asn-lookup`, `mac-lookup`, `tor-exit-lookup`, `icloud-relay-lookup`, `pcap-analyzer`, `splunk-mcp`, `bigquery-mcp` |
-| **2 — third party** | A registry, resolver, reputation service, or search engine | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `vpn-lookup`, `malware-lookup`, `otx-lookup`, `cve-lookup`, `shodan-lookup`, `opencti-lookup`, `gti-lookup`, `urlscan-lookup` (`search`), `brave-search` (`web_search`, `llm_context`) |
+| **2 — third party** | A registry, resolver, reputation service, or search engine | `whois-lookup`, `doh-lookup`, `rdns-lookup`, `abuse-lookup`, `vpn-lookup`, `cert-lookup`, `malware-lookup`, `otx-lookup`, `cve-lookup`, `shodan-lookup`, `opencti-lookup`, `gti-lookup`, `urlscan-lookup` (`search`), `brave-search` (`web_search`, `llm_context`) |
 | **3 — target contact, by proxy** | The party under investigation sees a visit **from urlscan.io** | `urlscan-lookup` (`scan_url`) |
 | **4 — target contact, from you** | The party under investigation sees a visit **from your IP** — with your browser, or as a plain GET | `chrome-pilot` (`navigate_page`, and anything that loads a resource), `web-fetch` (`fetch`) |
 
@@ -84,12 +84,14 @@ Six corollaries that are easy to get wrong:
   little, but the product name in `match_product` and the words of a
   `search_cves` tell a third party what you are looking into. It sends no
   version, by design — compare versions yourself. `abuse-lookup`, `urlscan-lookup`,
-  `otx-lookup`, `shodan-lookup`, `vpn-lookup` and `malware-lookup`'s Hybrid Analysis side
+  `otx-lookup`, `shodan-lookup`, `vpn-lookup`, `cert-lookup` and `malware-lookup`'s Hybrid Analysis side
   carry an API key, so the query lands in an account history someone else
   holds — with `shodan-lookup`, every address you look up and every search
   word; with `vpn-lookup`, every address, sent to two services under the
   organization's keys (proxycheck.io is told not to keep it in the account's
   detection log; ipapi.is still receives it against the key); with
+  `cert-lookup`, every domain name, to SSLMate (which logs request URLs) and,
+  when history is asked for, to Validin; with
   `malware-lookup`, every hash, which matters when the hash is a unique sample
   from a targeted intrusion. What it reports about the target was
   collected by Shodan's crawlers on Shodan's schedule; reading it sends
@@ -126,6 +128,7 @@ Investigation layer:
 | `rdns-lookup` | IP → every indexed domain; domain → subdomains, reverse CNAMEs (ip.thc.org index — not PTR) | 2 | none | `lookup_rdns` / `lookup_subdomains` / `lookup_cnames` |
 | `abuse-lookup` | IP reputation (AbuseIPDB) | 2 | API key; **1000 checks/day** | `check_ip` → `get_reports` |
 | `vpn-lookup` | Is this IP an intermediary — Tor, a commercial VPN, a managed privacy relay, a corporate or mail security gateway, a public DNS resolver, a satellite ISP, a proxy, hosting — and whose? One verdict from ipapi.is and proxycheck.io, and which of the two said so | 2 | An organization key for ipapi.is and/or proxycheck.io (free tiers); **1,000 lookups/day from each**; without a key the server answers but cannot look up. **The organization's own work only** — ipapi.is's terms forbid answering for third parties, such as a client's IR engagement | `check_ip` (`cache_status` for proxycheck.io's count today, about an hour late; ipapi.is publishes none) |
+| `cert-lookup` | Which certificates the public Certificate Transparency logs recorded for a domain — issuer, validity, revocation, the other names on each (leads to related domains), the CAA values that authorized the CA; past issuances, as a sample, on request (SSLMate CT Search, Validin) | 2 | An organization key for SSLMate (free); Validin's (free) only for history — **10 history queries/day, 50/month**; subtree queries **10/hour**; without an SSLMate key the server answers but cannot look up. **The organization's own work only** — Validin's terms | `lookup_certs` (`cache_status` for both services' remaining queries) |
 | `malware-lookup` | Is this file hash a known-good file or known malware? | 2 | Hybrid Analysis API key (free) for the malicious side — without it CIRCL only, so `known_good` / `unknown` and never malware | `check_hash` → *(rarely)* `get_sample_info` |
 | `otx-lookup` | Is this indicator part of a known campaign? Adversary, malware family, ATT&CK, targeted industries — and the pivot to the other indicators a pulse carries | 2 | API key optional (adds pulse search + an exact indicator total) | `lookup_indicator` → `get_pulse` |
 | `cve-lookup` | What a CVE is, how bad, and whether it is exploited or patched — CVSS, CISA KEV, EPSS, SSVC in one record; which CVEs apply to a product; what vendors have disclosed, including advisories with no CVE ID yet; how exposed the internet is (EchelonGraph CVE Pulse index) | 2 | none — no key, no account; **60 requests/minute per IP, shared by every process on this machine** | `get_cve` / `match_product` |
@@ -162,7 +165,7 @@ Proxies — infrastructure, not tools you pick per task:
 | You are handed | Do this |
 |---|---|
 | **An IP address** | `asn-lookup` (AS, country) → `tor-exit-lookup` + `icloud-relay-lookup` (is it an anonymizing egress at all?) → `rdns-lookup` (what else is hosted there — index read, no packet to the target) → `whois-lookup` (allocation) → the keyed reads **last**, because each lands in an account history: first `vpn-lookup` `check_ip`, which finishes the egress question the two offline lists began — commercial VPNs, proxies, hosting, and managed services no list here holds (relays other than Private Relay, such as Cloudflare WARP; corporate and mail gateways; public resolvers). `none` is not "a household line", `unknown` means a source failed, `seen_by` naming one source is a difference in coverage rather than a dispute, `gateway` (Zscaler and the like) hides real users of a real company, and `satellite` is a user's own line, not an intermediary. Then `abuse-lookup` (how the address has been used — read its score after the egress answer, which may already explain it; metered, like `vpn-lookup`) and, where configured, `shodan-lookup` `lookup_host` (what it exposes — ports, products, certificates, inferred CVEs; carry those CVE IDs to the CVE row, and read an empty `vulns` as "none inferred", never "not vulnerable"), and where configured `opencti-lookup` `lookup_ioc` (what the OpenCTI instance you hold a key to has on it, with sightings and decay). `otx-lookup` answers a different question from all of them — *is this part of a known campaign* — so run it whenever the answer would change your triage, not as a step in the ladder. If your own telemetry is in Splunk or BigQuery, `splunk-mcp` / `bigquery-mcp` slots in at the front: what *we* recorded is tier 1 and often decides whether the external ladder is worth walking |
-| **A domain** | `whois-lookup` (age, registrar, abuse contact) → `doh-lookup` (where it resolves now) → `rdns-lookup` (`lookup_subdomains` / `lookup_cnames` for the surrounding names) → `asn-lookup` on the resolved IPs. A days-old registration plus fresh NS is the signal, not any single field. `otx-lookup` in parallel for campaign context — note it asks a name as both `domain` and `hostname`, because OTX indexes each name under exactly one and answers 200 either way — and, where configured, `opencti-lookup` `lookup_ioc` after the anonymous reads, since every one of its queries is keyed |
+| **A domain** | `whois-lookup` (age, registrar, abuse contact) → `doh-lookup` (where it resolves now) → `rdns-lookup` (`lookup_subdomains` / `lookup_cnames` for the surrounding names) → `asn-lookup` on the resolved IPs. A days-old registration plus fresh NS is the signal, not any single field. Then the keyed read `cert-lookup` `lookup_certs`, for which certificates were issued: a certificate taken days after registration is the same signal, the names outside the domain on its certificates are related domains to send back through this row, and the CAA values that authorized the CA are compared with the CAA records `doh-lookup` returns. No issuances is not "nothing issued" — SSLMate holds only unexpired certificates; history adds Validin's sample at one of 10 daily queries per domain, so ask for it only when *when* matters. Every name under the domain is `rdns-lookup`'s question first, not `cert-lookup`'s 10-an-hour subtree query. `otx-lookup` in parallel for campaign context — note it asks a name as both `domain` and `hostname`, because OTX indexes each name under exactly one and answers 200 either way — and, where configured, `opencti-lookup` `lookup_ioc` after the anonymous reads, since every one of its queries is keyed |
 | **A file hash** | `malware-lookup` `check_hash` (1–100 per call, MD5/SHA1/SHA256 auto-detected). Read the verdict as four-way: `conflicting` means known file **and** flagged — scrutinize, never auto-resolve (even EICAR is conflicting, with the key); `unknown` is often just "never uploaded" — read the Hybrid Analysis verdict in the evidence — and a keyless `unknown` cannot see malice at all. `get_sample_info` only when the compact evidence is not enough. The VT link in each result is for a human browser, never an API to call. Then `otx-lookup` `lookup_indicator` for who reported the hash and under what campaign — `malware-lookup` says *what the file is*, `otx-lookup` says *whose operation it belongs to*. Where `opencti-lookup` is configured, its `lookup_ioc` says the same from the instance you hold a key to, with sightings. Where `gti-lookup` is configured, its `lookup_ioc` adds Google's association context and `get_file_behaviour` the sandbox view (index first, then one section at a time) — questions no free sibling answers |
 | **A URL** | `urlscan-lookup` `search` first, and, where configured, `opencti-lookup` `lookup_ioc`, which touches nothing but its instance — it also takes a suspicious mail's sender address, which no other server here looks up. Only if the passive record is empty *and* an active look is justified, `scan_url` (private) → `get_result` → `get_screenshot`. Feed observed IPs/domains back into the two rows above |
 | **An indicator that turned out to be reported** | `otx-lookup` `get_pulse` with the `pulse_id` from `lookup_indicator`, and `indicators: true` — this is the pivot from one indicator to the rest of a campaign, and it needs no API key. Read `incomplete` before you trust an empty answer, and `indicators_exact` before you trust a total. Pulses are community submissions: the author and vote counts come back so you can weigh them, and the tool never issues a verdict |
@@ -212,6 +215,10 @@ pcap ─▶ pcap-analyzer (conversations, streams, extracted objects)
   free plan is lower still; `vpn-lookup` spends one of each of its two
   services' 1,000 daily lookups per address. All three cache locally, so a
   repeated question costs nothing — do not defeat that by forcing a refresh out of habit.
+  `cert-lookup`'s scarce resource is Validin: history spends one of 10
+  queries a day (50 a month) per domain not in its week-long cache, and the
+  server refuses a history call the remainder cannot cover, sending nothing.
+  Its subtree queries get 10 an hour from SSLMate.
   `cve-lookup`'s ceiling is of another kind: 60 requests a minute **per IP
   address**, spent by every process on this machine at once — this session,
   another runtime's copy of the server, a shell loop. Each copy paces itself at
@@ -268,7 +275,8 @@ pcap ─▶ pcap-analyzer (conversations, streams, extracted objects)
   banners, page HTML and certificate subjects `shodan-lookup` returns: the
   investigated host wrote them. And so are the names, descriptions, patterns
   and attachments `opencti-lookup` returns: whoever fed the instance wrote
-  them.
+  them. And so are the names and issuers `cert-lookup` returns: CAs and
+  applicants wrote them.
 - **Do not put investigation material into a cloud model casually.** Customer
   mail bodies, capture contents, and internal hostnames go to `ask-llm`
   (local) if they go anywhere at all.
@@ -285,6 +293,7 @@ three servers without one, to their `tools/list` descriptions.
 | [references/campaign-context.md](references/campaign-context.md) | `otx-lookup` |
 | [references/vuln-intel.md](references/vuln-intel.md) | `cve-lookup` |
 | [references/exposure-intel.md](references/exposure-intel.md) | `shodan-lookup` |
+| [references/cert-intel.md](references/cert-intel.md) | `cert-lookup` |
 | [references/opencti-intel.md](references/opencti-intel.md) | `opencti-lookup` |
 | [references/gti-intel.md](references/gti-intel.md) | `gti-lookup` |
 | [references/url-triage.md](references/url-triage.md) | `urlscan-lookup` |

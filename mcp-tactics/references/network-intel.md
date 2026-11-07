@@ -125,6 +125,9 @@ Two constraints that are easy to miss:
    the freshness signal is each record's last-seen date, not "resolves now"
    (that is `doh-lookup`'s job).
 4. **`asn-lookup`** on each resolved IP — where it is actually hosted, offline.
+5. **`cert-lookup`** — the keyed read, last: which certificates the CT logs
+   recorded for the name, and the related domains on them. See
+   [cert-intel.md](cert-intel.md).
 
 `whois-lookup` is RDAP-first with a port-43 fallback for RDAP-less ccTLDs
 (`.jp` among them), so a JP domain works without special handling. Punycode is
