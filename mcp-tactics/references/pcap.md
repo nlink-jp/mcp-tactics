@@ -73,7 +73,8 @@ enforced rather than merely intended.
 A capture yields indicators, and indicators belong to the offline-first ladder:
 
 - External **IPs** from `list_conversations` → `asn-lookup` →
-  `tor-exit-lookup` / `icloud-relay-lookup` → `whois-lookup` → `abuse-lookup`
+  `tor-exit-lookup` / `icloud-relay-lookup` → `whois-lookup` → `vpn-lookup` →
+  `abuse-lookup`
 - **Hostnames** from DNS queries or TLS SNI → `whois-lookup` → `doh-lookup`,
   and compare the capture's answer against today's — a changed resolution is
   itself a finding

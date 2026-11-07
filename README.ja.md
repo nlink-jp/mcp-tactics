@@ -1,6 +1,6 @@
 # mcp-tactics
 
-[nlink-jp](https://github.com/nlink-jp) の 26 MCP サーバと 2 プロキシを横断する
+[nlink-jp](https://github.com/nlink-jp) の 27 MCP サーバと 2 プロキシを横断する
 戦術書 Skill（[ADR-003](https://github.com/nlink-jp/.github/blob/main/adr/003-mcp-tactics-skill.md)、
 [ADR-018](https://github.com/nlink-jp/.github/blob/main/adr/018-mcp-observability-tiers.md)
 と [ADR-027](https://github.com/nlink-jp/.github/blob/main/adr/027-mcp-tactics-scope-and-bundled-skills.md)

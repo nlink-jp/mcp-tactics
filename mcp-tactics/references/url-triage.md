@@ -68,7 +68,7 @@ A scan result is a source of new indicators, and every one of them should go
 back through the offline-first ladder rather than being scanned again:
 
 - Observed **IPs** → `asn-lookup` → `tor-exit-lookup` / `icloud-relay-lookup` →
-  `whois-lookup` → `abuse-lookup`
+  `whois-lookup` → `vpn-lookup` → `abuse-lookup`
 - Observed **domains** → `whois-lookup` (registration age) → `doh-lookup`
 - Redirect chains → treat each hop as its own URL, `search` first
 
