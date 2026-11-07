@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.16.0] - 2026-11-07
+
+### Added
+
+- **`vpn-lookup`, the 27th server** (tier 2; organization keys for ipapi.is
+  and/or proxycheck.io). It answers whether an IP is an intermediary — Tor, a
+  commercial VPN, a managed privacy relay, a corporate or mail security
+  gateway, a public DNS resolver, a satellite ISP, a proxy, hosting — and
+  whose, as one verdict with `seen_by` naming the source that said so. No
+  packet reaches the address, but every query is sent under the
+  organization's keys, so it joins the keyed side of tier 2's attribution
+  axis; the ladder's endpoints are unchanged. It is for the organization's
+  own work only (ipapi.is's terms).
+- In the IP row it is the first keyed read: it finishes the egress question
+  that `tor-exit-lookup` and `icloud-relay-lookup` start offline, and
+  `abuse-lookup`'s score is read only after it. `references/network-intel.md`
+  gains a section on using it with the offline lists and on reading its
+  verdicts (`none` is not a household line, `unknown` is a failed source,
+  `seen_by` on one side is a coverage difference, `gateway` hides real users
+  of a real company, `satellite` is no intermediary).
+
+### Changed
+
+- Wording the new server made false: `abuse-lookup` is no longer "the only
+  metered step" of the IP ladder, nor one of "the only servers that need a
+  credential to query". The IP chains in the URL and pcap playbooks now
+  include `vpn-lookup` before `abuse-lookup`.
+
 ## [0.15.0] - 2026-11-07
 
 ### Changed
